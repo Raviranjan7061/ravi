@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tracker - Lost & Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --primary-dark: #3730A3;
+            --bg-color: #F3F4F6;
+            --sidebar-bg: #111827;
+            --text-dark: #1F2937;
+            --text-light: #9CA3AF;
+            --white: #FFFFFF;
+            --danger: #EF4444;
+            --success: #10B981;
+            --warning: #F59E0B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar (Same as Dashboard) */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header i { color: var(--primary-light); font-size: 24px; }
+
+        .nav-links { flex: 1; padding: 24px 0; list-style: none; overflow-y: auto; }
+
+        .nav-item {
+            padding: 12px 24px;
+            margin: 4px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #D1D5DB;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active { background-color: rgba(255, 255, 255, 0.1); color: var(--white); }
+        .nav-item.active { background-color: var(--primary); }
+
+        .main-content {
+            flex: 1;
+            padding: 32px;
+            margin-left: 260px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 { color: var(--text-dark); font-size: 28px; font-weight: 700; }
+        .page-header p { color: var(--text-light); margin-top: 4px; font-size: 15px; }
+
+        /* FEATURE 1: Nearby Lost Alert */
+        .feature-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .feature-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .feature-title i {
+            width: 54px;
+            height: 54px;
+            background: #EEF2FF;
+            color: var(--primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .feature-title h2 { color: var(--text-dark); font-size: 20px; font-weight: 700; }
+
+        .nearby-stats {
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            border: 1px solid #C7D2FE;
+            padding: 24px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nearby-text h3 { font-size: 18px; color: var(--primary-dark); margin-bottom: 4px; }
+        .nearby-text p { font-size: 14px; color: var(--text-dark); opacity: 0.8; }
+
+        /* FEATURE 2: Last Seen Tracker */
+        .timeline-container {
+            margin-top: 16px;
+            padding: 16px;
+            background: #F8FAFC;
+            border-radius: 16px;
+            overflow-x: auto;
+        }
+
+        .timeline {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: max-content;
+            padding: 10px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .location-bubble {
+            background: white;
+            border: 2px solid #E5E7EB;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .location-bubble:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .location-bubble i { color: var(--primary); }
+
+        .arrow { color: var(--text-light); font-size: 18px; }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            background: #F9FAFB;
+            border-radius: 16px;
+            border: 2px dashed #D1D5DB;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-cube"></i>
+            <span>Lost & Found</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li><a href="smart-tracker.html" class="nav-item active"><i class="fa-solid fa-location-arrow"></i> Smart Features</a></li>
+            <li><a href="lost.html" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> Report Lost</a></li>
+            <li><a href="found.html" class="nav-item"><i class="fa-solid fa-hand-holding-heart"></i> Report Found</a></li>
+            <li><a href="map-view.html" class="nav-item"><i class="fa-solid fa-map-location-dot"></i> Live Map View</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Smart Tracker Hub</h1>
+            <p>Advanced tracking and nearby alerts for your reported items.</p>
+        </div>
+
+        <!-- 1. Nearby Lost Alert -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fa-solid fa-satellite-dish"></i>
+                <h2>Nearby Item Detection</h2>
+            </div>
+            <p style="color: var(--text-light); margin-bottom: 24px;">This feature cross-references your lost item locations with real-time found reports from our community.</p>
+            
+            <div class="nearby-stats" id="nearbyStatsArea">
+                <div class="nearby-text">
+                    <h3 id="nearbyTitle">Scanning for matches...</h3>
+                    <p id="nearbyDescription">Comparing your data with 24h found items.</p>
+                </div>
+                <i class="fa-solid fa-circle-nodes fa-spin" style="color: var(--primary); font-size: 24px;"></i>
+            </div>
+        </div>
+
+        <!-- 2. Last Seen Tracker -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fa-solid fa-shoe-prints"></i>
+                <h2>Last Seen Journey Tracker</h2>
+            </div>
+            <p style="color: var(--text-light); margin-bottom: 24px;">Visualize the travel path of your most recently reported lost item.</p>
+            
+            <div id="trackerTimelineContainer">
+                <div class="empty-state">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 12px;"></i>
+                    <p>Fetching your tracking path...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+            authDomain: "lost-found-app-af4e7.firebaseapp.com",
+            projectId: "lost-found-app-af4e7",
+            storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+            messagingSenderId: "933752134956",
+            appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const currentUserId = localStorage.getItem("userId") || "anonymous";
+
+        async function loadSmartFeatures() {
+            try {
+                const snapshot = await getDocs(query(collection(db, "items"), orderBy("createdAt", "desc")));
+                
+                let myLostLocations = new Set();
+                let foundItems = [];
+                let myLastItemPath = "";
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.type === "Lost" && data.userId === currentUserId) {
+                        if (data.location) myLostLocations.add(data.location.toLowerCase().trim());
+                        if (!myLastItemPath && data.lastSeenPath) myLastItemPath = data.lastSeenPath;
+                    } else if (data.type === "Found") {
+                        foundItems.push(data);
+                    }
+                });
+
+                // 1. Update Nearby Alert
+                const nearbyTitle = document.getElementById("nearbyTitle");
+                const nearbyDesc = document.getElementById("nearbyDescription");
+                let matchesCount = 0;
+                
+                foundItems.forEach(f => {
+                    if (f.location && myLostLocations.has(f.location.toLowerCase().trim())) {
+                        matchesCount++;
+                    }
+                });
+
+                if (matchesCount > 0) {
+                    nearbyTitle.innerText = `${matchesCount} Matches Found!`;
+                    nearbyDesc.innerText = `We found ${matchesCount} items near your reported locations. Check the Map View for details.`;
+                } else {
+                    nearbyTitle.innerText = "No Matches Yet";
+                    nearbyDesc.innerText = "We're monitoring. You'll be alerted here when matches arrive.";
+                }
+
+                // 2. Update Timeline
+                const timelineContainer = document.getElementById("trackerTimelineContainer");
+                if (myLastItemPath) {
+                    const steps = myLastItemPath.split(",").map(s => s.trim());
+                    let html = `<div class="timeline-container"><div class="timeline">`;
+                    steps.forEach((s, i) => {
+                        html += `
+                            <div class="step">
+                                <div class="location-bubble"><i class="fa-solid fa-location-dot"></i> ${s}</div>
+                                ${i < steps.length - 1 ? '<i class="fa-solid fa-arrow-right-long arrow"></i>' : ''}
+                            </div>
+                        `;
+                    });
+                    html += `</div></div>`;
+                    timelineContainer.innerHTML = html;
+                } else {
+                    timelineContainer.innerHTML = `<div class="empty-state"><p>No journey path found. Add a path in the "Report Lost" form!</p></div>`;
+                }
+
+                // Stop spinner
+                document.querySelector(".nearby-stats i").className = "fa-solid fa-satellite";
+
+            } catch (err) {
+                console.error(err);
+                alert("Error loading features. Please check your connection.");
+            }
+        }
+
+        loadSmartFeatures();
+    </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Profile - Lost & Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #A5B4FC;
+            --primary-dark: #4338CA;
+            --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-blur: blur(12px);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --white: #FFFFFF;
+            --danger: #EF4444;
+            --success: #10B981;
+            --accent-purple: #8B5CF6;
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #F0F4FF 0%, #FFFFFF 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(99, 102, 241, 0.1);
+            --text-main: #0F172A;
+            --text-muted: #475569;
+            --white: #0F172A;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background: var(--bg-gradient); 
+            background-attachment: fixed;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px; 
+            transition: all 0.3s ease;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .back-btn { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: var(--primary-light); 
+            text-decoration: none; 
+            font-weight: 700; 
+            margin-bottom: 24px; 
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+        .back-btn:hover { transform: translateX(-5px); color: var(--white); }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .profile-header {
+            margin-bottom: 32px;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+        }
+
+        .profile-avatar { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 28px; 
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple)); 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 48px; 
+            font-weight: 800; 
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+            background-size: cover;
+            background-position: center;
+            border: 4px solid var(--white);
+        }
+
+        .profile-info h1 { 
+            font-size: 28px; 
+            font-weight: 800;
+            margin-bottom: 8px; 
+            color: var(--text-main);
+        }
+        .profile-info p { 
+            color: var(--text-muted); 
+            font-size: 15px; 
+            font-weight: 500;
+        }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin: 32px 0; 
+        }
+        .stat-box { 
+            padding: 24px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 20px; 
+            border: 1px solid var(--glass-border); 
+            transition: 0.3s;
+        }
+        .stat-box:hover { transform: translateY(-5px); background: rgba(255,255,255,0.06); }
+        .stat-value { display: block; font-size: 28px; font-weight: 800; color: var(--primary-light); margin-bottom: 4px; }
+        .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+        .edit-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            font-weight: 600;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn { 
+            width: 100%;
+            padding: 18px; 
+            border-radius: 16px; 
+            font-weight: 800; 
+            text-decoration: none; 
+            transition: 0.3s; 
+            cursor: pointer; 
+            border: none; 
+            font-size: 16px; 
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .btn-save { background: linear-gradient(135deg, var(--primary), var(--accent-purple)); color: white; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+        .btn-save:hover { transform: scale(1.02); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5); }
+        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .btn-upload { display: inline-flex; align-items: center; gap: 8px; padding: 16px; background: rgba(255,255,255,0.05); border: 2px dashed var(--glass-border); border-radius: 14px; color: var(--text-main); cursor: pointer; transition: 0.3s; font-size: 14px; width: 100%; justify-content: center; font-weight: 600; }
+        .btn-upload:hover { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+
+        .btn-logout { background: transparent; border: 1px solid var(--danger); color: var(--danger); margin-top: 20px; }
+        .btn-logout:hover { background: var(--danger); color: white; }
+
+        /* Smooth Switch */
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch" id="themeToggle">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+
+        <div class="glass-card">
+            <div class="profile-header">
+                <div class="avatar-container">
+                    <div class="profile-avatar" id="avatarDisplay">U</div>
+                </div>
+                <div class="profile-info">
+                    <h1 id="nameDisplay">User Name</h1>
+                    <p id="emailDisplay">user@example.com</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-value" id="countReported">0</span>
+                    <span class="stat-label">Items Reported</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="countResolved">0</span>
+                    <span class="stat-label">System Contribution</span>
+                </div>
+            </div>
+
+            <div class="edit-fields">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="nameInput" placeholder="How should we call you?">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="emailInput" placeholder="your@email.com">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phoneInput" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="form-group">
+                        <label>Home Address</label>
+                        <input type="text" id="addressInput" placeholder="City, Country">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                    <label for="photoUpload" class="btn-upload">
+                        <i class="fa-solid fa-camera"></i> Upload Image
+                    </label>
+                </div>
+                <button class="btn btn-save" id="saveBtn">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+                </button>
+                <button class="btn btn-logout" id="logoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, updateDoc, collection, getDocs, query, where, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+            authDomain: "lost-found-app-af4e7.firebaseapp.com",
+            projectId: "lost-found-app-af4e7",
+            storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+            messagingSenderId: "933752134956",
+            appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let selectedPhotoData = "";
+
+        // Core UI Data
+        function loadData() {
+            const name = localStorage.getItem("userName") || "Guest User";
+            const email = localStorage.getItem("userEmail") || "Not Logged In";
+            const photo = localStorage.getItem("userPhoto") || "";
+            const phone = localStorage.getItem("userPhone") || "";
+            const address = localStorage.getItem("userAddress") || "";
+            
+            document.getElementById("nameDisplay").innerText = name;
+            document.getElementById("emailDisplay").innerText = email;
+            document.getElementById("nameInput").value = name;
+            document.getElementById("emailInput").value = email;
+            document.getElementById("phoneInput").value = phone;
+            document.getElementById("addressInput").value = address;
+            selectedPhotoData = photo;
+
+            const avatar = document.getElementById("avatarDisplay");
+            if(photo) {
+                avatar.textContent = "";
+                avatar.style.backgroundImage = `url('${photo}')`;
+            } else {
+                avatar.textContent = name.charAt(0).toUpperCase();
+                avatar.style.backgroundImage = "none";
+            }
+
+            fetchStats();
+        }
+
+        async function fetchStats() {
+            const userId = localStorage.getItem("userId");
+            if (!userId) return;
+            try {
+                const q = query(collection(db, "items"), where("userId", "==", userId));
+                const snapshot = await getDocs(q);
+                document.getElementById("countReported").innerText = snapshot.size;
+                let resolved = 0;
+                snapshot.forEach(doc => { if(doc.data().status === 'Approved') resolved++ });
+                document.getElementById("countResolved").innerText = resolved;
+            } catch (err) { console.error(err); }
+        }
+
+        // Photo Upload Handler
+        document.getElementById("photoUpload")?.addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    selectedPhotoData = event.target.result;
+                    const avatar = document.getElementById("avatarDisplay");
+                    avatar.textContent = "";
+                    avatar.style.backgroundImage = `url('${selectedPhotoData}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Action Logic
+        document.getElementById("saveBtn").onclick = async () => {
+            const newName = document.getElementById("nameInput").value.trim();
+            const newEmail = document.getElementById("emailInput").value.trim();
+            const newPhone = document.getElementById("phoneInput").value.trim();
+            const newAddress = document.getElementById("addressInput").value.trim();
+            const newPhoto = selectedPhotoData;
+            const userId = localStorage.getItem("userId");
+
+            if (!newName) return alert("Please enter your name");
+
+            const saveBtn = document.getElementById("saveBtn");
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+            try {
+                if (userId) {
+                    const userRef = doc(db, "users", userId);
+                    await setDoc(userRef, { 
+                        name: newName, 
+                        email: newEmail,
+                        phone: newPhone,
+                        address: newAddress,
+                        photoURL: newPhoto,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    localStorage.setItem("userName", newName);
+                    localStorage.setItem("userEmail", newEmail);
+                    localStorage.setItem("userPhone", newPhone);
+                    localStorage.setItem("userAddress", newAddress);
+                    localStorage.setItem("userPhoto", newPhoto);
+                }
+
+                alert("Changes saved to your profile!");
+                loadData();
+            } catch (err) { alert(err.message); }
+            finally { 
+                saveBtn.disabled = false; 
+                saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Profile Changes`;
+            }
+        };
+
+        document.getElementById("logoutBtn").onclick = () => {
+            localStorage.clear();
+            window.location.href = "login.html";
+        };
+
+        // Theme Toggle
+        const themeBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            themeIcon.className = 'fa-solid fa-sun';
+        }
+        themeBtn.onclick = () => {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            themeIcon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        };
+
+        loadData();
+    </script>
+</body>
+</html>

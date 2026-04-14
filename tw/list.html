@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Lost & Found Items</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --bg-color: #F3F4F6;
+      --white: #FFFFFF;
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+      --border: #E5E7EB;
+      --danger: #EF4444;
+      --success: #10B981;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body {
+      background-color: var(--bg-color);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .header { padding: 20px; flex-direction: column; gap: 15px; align-items: flex-start; }
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      padding: 30px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      color: var(--text-dark);
+      font-size: 24px;
+    }
+    .back-btn {
+      padding: 10px 16px;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background-color: #E2E8F0; }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th, td {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background-color: #F9FAFB;
+      color: var(--text-light);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    td {
+      font-size: 14px;
+      color: var(--text-dark);
+      vertical-align: middle;
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-lost { background-color: #FEE2E2; color: #B91C1C; }
+    .status-found { background-color: #D1FAE5; color: #047857; }
+    
+    .img-preview {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      background-color: var(--bg-color);
+      display: inline-block;
+    }
+    
+    .loading-state {
+      text-align: center;
+      padding: 60px;
+      color: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>All Reported Items</h1>
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+  </div>
+  
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Item Identity</th>
+          <th>Status</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Contact Info</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="itemsTable">
+        <tr>
+            <td colspan="7">
+                <div class="loading-state">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 15px;">Loading items securely from database...</p>
+                </div>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================= FIREBASE SCRIPT ================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+  // 🔑 Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+    authDomain: "lost-found-app-af4e7.firebaseapp.com",
+    projectId: "lost-found-app-af4e7",
+    storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+    messagingSenderId: "933752134956",
+    appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const table = document.getElementById("itemsTable");
+
+  async function loadItems() {
+    try {
+      // Create unified query requesting all documents from the standardized 'items' collection
+      const itemsQuery = query(collection(db, "items"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(itemsQuery);
+      
+      table.innerHTML = ""; // clear loader
+      
+      if(snapshot.empty) {
+          table.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #6B7280; padding: 40px;">No items reported yet.</td></tr>`;
+          return;
+      }
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const isLost = d.type === "Lost";
+        
+        let imgHtml = d.imageUrl 
+            ? `<img src="${d.imageUrl}" class="img-preview" alt="Item Image">` 
+            : `<div class="img-preview" style="display:flex;align-items:center;justify-content:center;color:#9CA3AF;"><i class="fa-solid fa-image"></i></div>`;
+
+        table.innerHTML += `
+          <tr>
+            <td>${imgHtml}</td>
+            <td>
+                <strong>${d.itemName || "Unnamed Item"}</strong><br>
+                <span style="font-size:12px; color:#6B7280;">${d.date || "No date recorded"}</span>
+            </td>
+            <td>
+                <span class="status-badge ${isLost ? 'status-lost' : 'status-found'}">
+                    ${isLost ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-check-to-slot"></i>'}
+                    ${d.type || "Unknown"}
+                </span>
+            </td>
+            <td>${d.category || "-"}</td>
+            <td>
+                <i class="fa-solid fa-location-dot" style="color: #9CA3AF; margin-right:4px;"></i> 
+                ${d.location || "-"}
+            </td>
+            <td>${d.contact || "No Contact"}</td>
+            <td>
+                <a href="claim-verification.html?itemId=${doc.id}" style="padding: 6px 12px; border-radius: 6px; background-color: var(--primary); color: white; font-size: 11px; text-decoration: none; font-weight: 700; white-space: nowrap; display: inline-block;">
+                    <i class="fa-solid fa-hand-holding-heart"></i> Claim Item
+                </a>
+            </td>
+          </tr>
+        `;
+      });
+      
+    } catch (e) {
+      console.error(e);
+      table.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red; padding: 40px;">Failed to load data. Please refresh.</td></tr>`;
+    }
+  }
+
+  loadItems();
+</script>
+
+</body>
+</html>

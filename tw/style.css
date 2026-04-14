@@ -1,0 +1,84 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #dbeafe, #f8fafc);
+  min-height: 100vh;
+  text-align: center;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(90deg, #2563eb, #1e40af);
+  color: white;
+  padding: 20px;
+  font-size: 26px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* CARD BOX */
+.box {
+  background: white;
+  margin: 25px auto;
+  padding: 22px;
+  width: 92%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* LINKS AS BUTTONS */
+.box a {
+  display: block;
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  background: #2563eb;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.box a:hover {
+  background: #1e40af;
+  transform: scale(1.03);
+}
+
+/* LOGOUT SPECIAL */
+.box:last-of-type a {
+  background: #ef4444;
+}
+
+.box:last-of-type a:hover {
+  background: #b91c1c;
+}
+
+/* FOOTER */
+.footer {
+  margin: 30px 0 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+th {
+  background: #2563eb;
+  color: white;
+}

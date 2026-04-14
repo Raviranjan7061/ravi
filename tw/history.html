@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity History - Lost & Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 40px 20px; }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .back-btn { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .back-btn:hover { color: var(--primary-light); transform: translateX(-5px); }
+
+        .tabs { display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; }
+        .tab { cursor: pointer; color: var(--text-muted); font-weight: 600; padding: 10px 20px; border-radius: 12px; transition: 0.3s; }
+        .tab.active { background: var(--glass-bg); color: var(--primary-light); border: 1px solid var(--glass-border); }
+
+        .history-list { display: grid; gap: 16px; }
+        .history-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+        .history-card:hover { border-color: var(--primary-light); transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+
+        .item-info h3 { font-size: 18px; margin-bottom: 4px; }
+        .item-meta { font-size: 13px; color: var(--text-muted); display: flex; gap: 15px; }
+        .item-meta i { margin-right: 5px; color: var(--primary-light); }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .status-approved { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .status-flagged { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .status-returned { background: rgba(99, 102, 241, 0.1); color: var(--primary-light); border: 1px solid var(--primary-light); }
+
+        .empty-state { text-align: center; padding: 60px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 style="font-size: 32px; font-weight: 800;">Activity History</h1>
+                <p style="color: var(--text-muted); margin-top: 4px;">Track your reported items and ownership claims</p>
+            </div>
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('reports')">Reported Items</div>
+            <div class="tab" onclick="switchTab('claims')">Ownership Claims</div>
+        </div>
+
+        <div id="activityContainer" class="history-list">
+            <!-- Dynamic Content -->
+            <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading your history...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+            authDomain: "lost-found-app-af4e7.firebaseapp.com",
+            projectId: "lost-found-app-af4e7",
+            storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+            messagingSenderId: "933752134956",
+            appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const userId = localStorage.getItem("userId");
+        let activeTab = 'reports';
+
+        window.switchTab = (tab) => {
+            activeTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            fetchData();
+        };
+
+        async function fetchData() {
+            const container = document.getElementById('activityContainer');
+            container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+
+            try {
+                let q;
+                if(activeTab === 'reports') {
+                    q = query(collection(db, "items"), where("userId", "==", userId));
+                } else {
+                    q = query(collection(db, "claims"), where("claimantUserId", "==", userId));
+                }
+
+                const snapshot = await getDocs(q);
+                container.innerHTML = "";
+
+                if(snapshot.empty) {
+                    container.innerHTML = `<div class="empty-state">No ${activeTab} found in your history.</div>`;
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const status = data.status || 'Pending';
+                    const date = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString() : (data.submittedAt?.toDate ? data.submittedAt.toDate().toLocaleDateString() : 'Recent');
+                    
+                    container.innerHTML += `
+                        <div class="history-card">
+                            <div class="item-info">
+                                <h3>${data.itemName || "Unnamed Item"}</h3>
+                                <div class="item-meta">
+                                    <span><i class="fa-solid fa-calendar"></i> ${date}</span>
+                                    <span><i class="fa-solid fa-tag"></i> ${data.category || (activeTab === 'reports' ? data.type : 'Claim')}</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> ${data.location || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div class="status-badge status-${status.toLowerCase()}">${status}</div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Failed to load history: ${err.message}</div>`;
+            }
+        }
+
+        if(userId) fetchData();
+        else window.location.href="login.html";
+    </script>
+</body>
+</html>

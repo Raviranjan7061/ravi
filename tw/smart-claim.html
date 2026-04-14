@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Claim & Pickup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0F1123;
+            --sidebar-bg: #15182E;
+            --card-bg: #1C1F37;
+            --primary: #7C3AED;
+            --primary-light: #8B5CF6;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border: rgba(255, 255, 255, 0.05);
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* Left Sidebar copy from layout */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+        .sidebar-header { padding: 24px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+        .sidebar-header i { color: var(--primary-light); }
+        .nav-links { flex: 1; padding: 24px 0; list-style: none; overflow-y: auto; }
+        .nav-item { padding: 12px 24px; margin: 4px 16px; border-radius: 12px; display: flex; align-items: center; gap: 14px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+        .nav-item.active { background: var(--primary-light); color: white; }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; }
+        .nav-subheader { padding: 20px 30px 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+            max-width: 1400px;
+        }
+
+        .page-header { margin-bottom: 30px; }
+        .page-title {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            max-width: 800px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .custom-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: all 0.3s;
+        }
+
+        .custom-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .card-icon {
+            color: var(--primary-light);
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .separator { height: 1px; background: rgba(255, 255, 255, 0.08); margin: 8px 0; }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-primary { background: var(--primary); border: none; }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-success { background: var(--success); border: none; }
+        
+        .badge {
+            background: linear-gradient(135deg, #B45309, #D97706);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Elements inside cards */
+        .claim-item-row { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;}
+        .status-badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-approved { background: rgba(59, 130, 246, 0.2); color: #60A5FA; }
+        .status-ready { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-completed { background: rgba(139, 92, 246, 0.2); color: var(--primary-light); }
+        
+        .qr-box { background: white; padding: 12px; border-radius: 8px; display: inline-block; margin: 10px 0; display: none; text-align: center; }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 13px;
+            margin-bottom: 10px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-cube"></i>
+            <span>Lost & Found</span>
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li><a href="list.html" class="nav-item"><i class="fa-solid fa-list"></i> All Items</a></li>
+            
+            <li class="nav-subheader">Advanced</li>
+            <li><a href="smart-claim.html" class="nav-item active"><i class="fa-solid fa-box-open"></i> Smart Claim & Pickup</a></li>
+            <li><a href="claim-verification.html" class="nav-item"><i class="fa-solid fa-shield-halved"></i> Claim Verification</a></li>
+            <li><a href="smart-match.html" class="nav-item"><i class="fa-solid fa-robot"></i> AI Smart Match</a></li>
+            
+            <li class="nav-subheader" id="smartClaimSystemNavSubheader">System</li>
+            <li id="smartClaimAdminNavItem"><a href="admin-dashboard.html" class="nav-item"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title"><i class="fa-solid fa-layer-group" style="color: #60A5FA;"></i> Smart Claim & Pickup</h1>
+            <p class="page-subtitle">Claim items, track status, verify at pickup, and reward finders — powered by Firebase Auth & Firestore with live updates.</p>
+        </div>
+
+        <div class="cards-grid">
+            
+            <!-- Card 1: Claim an item -->
+            <div class="custom-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-hand-holding-hand card-icon" style="color: #F59E0B;"></i> Claim an item
+                </div>
+                <div class="card-desc">Pick a found item. If nobody claims it within 7 days of listing, it goes on vacation forever.</div>
+                <div class="separator"></div>
+                <div style="display: flex; flex-direction: column; gap: 8px;" id="availableItemsBox">
+                    <p style="font-size: 13px; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading items from Firestore…</p>
+                </div>
+            </div>
+
+            <!-- Card 2: Admin simulation removed from public view as requested -->
+
+            <!-- Card 3: My Claims -->
+            <div class="custom-card">
+                <div class="card-title">
+                    <i class="fa-regular fa-clipboard card-icon" style="color: #F3F4F6;"></i> My Claims
+                </div>
+                <div class="separator"></div>
+                <div id="myClaimsArea" style="font-size: 13px; color: var(--text-muted);">
+                    Loading your claims…
+                </div>
+            </div>
+
+            <!-- Card 4: Pickup code & QR -->
+            <div class="custom-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-qrcode card-icon" style="color: #D8B4FE;"></i> Pickup code & QR
+                </div>
+                <div class="card-desc">When an admin marks your claim as ready, your pickup code and QR appear here automatically.</div>
+                <div class="separator"></div>
+                <p id="qrNotReadyMsg" style="font-size: 13px; color: var(--text-muted); display: block;">Not ready</p>
+                <div class="qr-box" id="qrContainer">
+                    <div id="qrcode"></div>
+                    <div style="color: #1E293B; font-weight: 800; font-size: 18px; margin-top: 10px; letter-spacing: 1px;" id="pickupCodeTxt"></div>
+                </div>
+            </div>
+
+            <!-- Card 5: Desk verification -->
+            <div class="custom-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-shield-halved card-icon" style="color: #cbd5e1;"></i> Desk verification (pickup)
+                </div>
+                <div class="card-desc">When status is Ready for Pickup, answer using the same details you submitted with your claim.</div>
+                <div class="separator"></div>
+                <div id="verificationArea">
+                    <p id="verifyHint" style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Desk verification unlocks when your claim is ready for pickup.</p>
+                    <input type="text" id="verifyAns1" placeholder="Answer 1 (same as on claim form)" disabled>
+                    <input type="text" id="verifyAns2" placeholder="Answer 2" disabled>
+                    <input type="text" id="verifyAns3" placeholder="Answer 3" disabled>
+                    <button class="btn btn-primary" id="verifyBtn" disabled onclick="verifyAnswer()" style="width: 100%; margin-top: 8px;">Verify & Complete</button>
+                    <div id="verifyError" style="color: var(--danger); font-size: 12px; margin-top: 8px; display: none;">Those answers do not match what we have on file. Try again.</div>
+                </div>
+            </div>
+
+            <!-- Card 6: Rewards & leaderboard -->
+            <div class="custom-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-trophy card-icon" style="color: #F59E0B;"></i> Rewards & leaderboard
+                </div>
+                <div class="card-desc">Each successful return gives the finder +10 points and the <span class="badge"><i class="fa-solid fa-trophy"></i> Good Human Award</span></div>
+                <div class="separator"></div>
+                
+                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-weight: 600; font-size: 14px;">My Reward Points</div>
+                    <div style="font-weight: 800; color: var(--success);" id="userPoints">0</div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; font-weight: 700;">Leaderboard</div>
+                    <div id="leaderboardList" style="font-size: 13px; color: var(--text-muted);">Loading leaderboard…</div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, updateDoc, getDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+            authDomain: "lost-found-app-af4e7.firebaseapp.com",
+            projectId: "lost-found-app-af4e7",
+            storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+            messagingSenderId: "933752134956",
+            appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const MASTER_ADMIN_EMAIL = "raviranjan706187@gmail.com";
+        (function syncAdminSidebarVisibility() {
+            const em = (localStorage.getItem("userEmail") || "").toLowerCase().trim();
+            const isMasterAdmin = em === MASTER_ADMIN_EMAIL;
+            const adminRow = document.getElementById("smartClaimAdminNavItem");
+            const systemHeader = document.getElementById("smartClaimSystemNavSubheader");
+            if (adminRow) adminRow.style.display = isMasterAdmin ? "" : "none";
+            if (systemHeader) systemHeader.style.display = isMasterAdmin ? "" : "none";
+        })();
+
+        function currentUserId() {
+            return localStorage.getItem("userId") || "";
+        }
+
+        let foundItems = [];
+        let foundItemsAlt = [];
+        let myClaims = [];
+        let allUsers = [];
+        /** Single claim used for QR + desk verification (must match a row in My Claims). */
+        window.activePickupClaim = null;
+        let lastQrKey = "";
+
+        function isFoundType(t) {
+            return String(t || "").toLowerCase() === "found";
+        }
+
+        function claimTimeMs(c) {
+            const a = c.createdAt;
+            const b = c.submittedAt;
+            if (a && typeof a.toMillis === "function") return a.toMillis();
+            if (b && typeof b.toMillis === "function") return b.toMillis();
+            if (typeof a === "number") return a;
+            if (typeof b === "number") return b;
+            return 0;
+        }
+
+        function sortClaimsDesc(list) {
+            return [...list].sort((x, y) => claimTimeMs(y) - claimTimeMs(x));
+        }
+
+        function statusBadgeClass(statusRaw) {
+            const s = (statusRaw || "").toLowerCase();
+            if (s === "pending" || s === "pending investigation") return "status-pending";
+            if (s === "approved") return "status-approved";
+            if (s === "ready for pickup") return "status-ready";
+            if (s === "completed" || s === "verified") return "status-completed";
+            return "status-pending";
+        }
+
+        function pickActivePickupClaim(claims) {
+            const ready = claims.filter(
+                (c) => c.status === "Ready for Pickup" && c.pickupCode
+            );
+            if (!ready.length) return null;
+            return sortClaimsDesc(ready)[0];
+        }
+
+        function generateQR(code) {
+            const host = document.getElementById("qrcode");
+            host.innerHTML = "";
+            new QRCode(host, {
+                text: code,
+                width: 120,
+                height: 120,
+                colorDark: "#1E293B",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            document.getElementById("pickupCodeTxt").innerText = code;
+        }
+
+        function renderFoundItems() {
+            const box = document.getElementById("availableItemsBox");
+            const merged = new Map();
+            [...foundItems, ...foundItemsAlt].forEach((it) => {
+                if (it && it.id) merged.set(it.id, it);
+            });
+            const list = [...merged.values()].filter((it) => {
+                if (!isFoundType(it.type)) return false;
+                const st = String(it.status || "").toLowerCase();
+                if (st === "flagged") return false;
+                return true;
+            });
+            if (!currentUserId()) {
+                box.innerHTML =
+                    '<p style="font-size: 13px; color: var(--text-muted);">Log in to claim an item.</p>';
+                return;
+            }
+            if (!list.length) {
+                box.innerHTML =
+                    '<p style="font-size: 13px; color: var(--text-muted);">No items available</p>';
+                return;
+            }
+            box.innerHTML = list
+                .map(
+                    (it) => `
+                <div class="claim-item-row">
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px;">${escapeHtml(it.itemName || "Item")}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(it.location || "")} · ${escapeHtml(it.category || "")}</div>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-claim-item="${escapeAttr(it.id)}">Claim</button>
+                </div>`
+                )
+                .join("");
+            box.querySelectorAll("[data-claim-item]").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const id = btn.getAttribute("data-claim-item");
+                    window.location.href =
+                        "claim-verification.html?itemId=" + encodeURIComponent(id);
+                });
+            });
+        }
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function escapeAttr(s) {
+            return escapeHtml(s).replace(/'/g, "&#39;");
+        }
+
+        function renderMyClaims() {
+            const el = document.getElementById("myClaimsArea");
+            if (!currentUserId()) {
+                el.innerHTML =
+                    '<span style="color: var(--text-muted);">Log in to see your claims.</span>';
+                return;
+            }
+            if (!myClaims.length) {
+                el.innerHTML =
+                    '<span style="color: var(--text-muted);">No claims yet</span>';
+                return;
+            }
+            const sorted = sortClaimsDesc(myClaims);
+            el.innerHTML = sorted
+                .map((c) => {
+                    const active =
+                        window.activePickupClaim && c.id === window.activePickupClaim.id;
+                    return `
+                    <div class="claim-item-row" style="background: rgba(255,255,255,0.05); ${active ? "outline:1px solid rgba(139,92,246,0.5);" : ""}">
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">${escapeHtml(c.itemName || "Item")}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">ID: ${escapeHtml(c.id.substring(0, 8))}…</div>
+                        </div>
+                        <span class="status-badge ${statusBadgeClass(c.status)}">${escapeHtml((c.status || "").toUpperCase())}</span>
+                    </div>`;
+                })
+                .join("");
+        }
+
+        function renderLeaderboard() {
+            const el = document.getElementById("leaderboardList");
+            const ranked = [...allUsers]
+                .map((u) => ({
+                    id: u.id,
+                    name: u.name || u.email || "User",
+                    points: typeof u.points === "number" ? u.points : parseInt(u.points, 10) || 0
+                }))
+                .sort((a, b) => b.points - a.points)
+                .slice(0, 10);
+            if (!ranked.length) {
+                el.innerHTML =
+                    '<span style="color: var(--text-muted);">No leaderboard data yet.</span>';
+                return;
+            }
+            el.innerHTML = ranked
+                .map(
+                    (u, i) => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span>${i + 1}. ${escapeHtml(u.name)}</span>
+                    <span style="color: var(--success); font-weight: 600;">${u.points}</span>
+                </div>`
+                )
+                .join("");
+        }
+
+        function updateMyPointsDisplay() {
+            if (!currentUserId()) {
+                document.getElementById("userPoints").innerText = "—";
+                return;
+            }
+            const me = allUsers.find((u) => u.id === currentUserId());
+            const pts = me
+                ? typeof me.points === "number"
+                    ? me.points
+                    : parseInt(me.points, 10) || 0
+                : 0;
+            document.getElementById("userPoints").innerText = String(pts);
+        }
+
+        function updateUI() {
+            renderFoundItems();
+            window.activePickupClaim = pickActivePickupClaim(myClaims);
+            const claim = window.activePickupClaim;
+
+            if (claim) {
+                console.log(claim);
+                console.log(claim.status, claim.pickupCode);
+            } else if (myClaims.length) {
+                const latest = sortClaimsDesc(myClaims)[0];
+                console.log(latest);
+                console.log(latest.status, latest.pickupCode);
+            }
+
+            renderMyClaims();
+
+            const qrBox = document.getElementById("qrContainer");
+            const notReady = document.getElementById("qrNotReadyMsg");
+
+            if (claim && claim.status === "Ready for Pickup" && claim.pickupCode) {
+                notReady.style.display = "none";
+                qrBox.style.display = "inline-block";
+                const key = claim.pickupCode + "|" + claim.id;
+                if (key !== lastQrKey) {
+                    lastQrKey = key;
+                    generateQR(claim.pickupCode);
+                }
+            } else {
+                lastQrKey = "";
+                notReady.style.display = "block";
+                notReady.innerText = "Not ready";
+                qrBox.style.display = "none";
+                document.getElementById("qrcode").innerHTML = "";
+                document.getElementById("pickupCodeTxt").innerText = "";
+            }
+
+            const a1 = document.getElementById("verifyAns1");
+            const a2 = document.getElementById("verifyAns2");
+            const a3 = document.getElementById("verifyAns3");
+            const vBtn = document.getElementById("verifyBtn");
+            const hint = document.getElementById("verifyHint");
+            const canVerify = !!(claim && claim.status === "Ready for Pickup");
+
+            [a1, a2, a3].forEach((inp) => {
+                inp.disabled = !canVerify;
+            });
+            vBtn.disabled = !canVerify;
+            hint.innerText = canVerify
+                ? "Enter the same three answers you used when you filed this claim."
+                : "Desk verification unlocks when your claim is ready for pickup.";
+
+            document.getElementById("verifyError").style.display = "none";
+        }
+
+        onSnapshot(collection(db, "items"), (snap) => {
+            foundItems = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            updateUI();
+        });
+
+        onSnapshot(
+            collection(db, "found_items"),
+            (snap) => {
+                foundItemsAlt = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+                updateUI();
+            },
+            () => {
+                foundItemsAlt = [];
+                updateUI();
+            }
+        );
+
+        onSnapshot(collection(db, "claims"), (snap) => {
+            const uid = localStorage.getItem("userId") || "";
+            const em = (localStorage.getItem("userEmail") || "").toLowerCase().trim();
+            myClaims = snap.docs
+                .map((d) => ({ id: d.id, ...d.data() }))
+                .filter((c) => {
+                    const cEm = (c.claimantEmail || "").toLowerCase().trim();
+                    if (uid && (c.userId === uid || c.claimantUserId === uid)) return true;
+                    if (em && cEm && cEm === em) return true;
+                    return false;
+                });
+            updateUI();
+        });
+
+        onSnapshot(collection(db, "users"), (snap) => {
+            allUsers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            renderLeaderboard();
+            updateMyPointsDisplay();
+            updateUI();
+        });
+
+        window.verifyAnswer = async function () {
+            const claim = window.activePickupClaim;
+            const err = document.getElementById("verifyError");
+            err.style.display = "none";
+
+            if (!claim || claim.status !== "Ready for Pickup") {
+                err.innerText = "No claim is ready for pickup.";
+                err.style.display = "block";
+                return;
+            }
+
+            const u1 = document.getElementById("verifyAns1").value.trim().toLowerCase();
+            const u2 = document.getElementById("verifyAns2").value.trim().toLowerCase();
+            const u3 = document.getElementById("verifyAns3").value.trim().toLowerCase();
+
+            const stored = (claim.answers || []).map((x) =>
+                String(x || "")
+                    .trim()
+                    .toLowerCase()
+            );
+            let ok = false;
+            if (stored.length >= 3) {
+                ok = u1 === stored[0] && u2 === stored[1] && u3 === stored[2];
+            } else if (claim.secretAnswer) {
+                const sec = String(claim.secretAnswer).trim().toLowerCase();
+                ok = u1 === sec || [u1, u2, u3].filter(Boolean).join(" ").includes(sec);
+            }
+
+            if (!ok) {
+                err.style.display = "block";
+                const container = document.getElementById("verificationArea");
+                container.style.transform = "translateX(-10px)";
+                setTimeout(() => (container.style.transform = "translateX(10px)"), 50);
+                setTimeout(() => (container.style.transform = "translateX(0)"), 100);
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "claims", claim.id), { status: "Completed" });
+
+                if (claim.itemId) {
+                    const itemSnap = await getDoc(doc(db, "items", claim.itemId));
+                    if (itemSnap.exists) {
+                        const item = itemSnap.data();
+                        const finderId =
+                            item.userId || item.reportedBy || item.finderUserId || "";
+                        if (finderId && finderId !== "anonymous") {
+                            await updateDoc(doc(db, "users", finderId), {
+                                points: increment(10)
+                            });
+                        }
+                    }
+                }
+
+                document.getElementById("verifyAns1").value = "";
+                document.getElementById("verifyAns2").value = "";
+                document.getElementById("verifyAns3").value = "";
+                alert(
+                    "Pickup verified. Your claim is completed. The finder has been awarded +10 points."
+                );
+            } catch (e) {
+                console.error(e);
+                err.innerText = "Could not complete verification. Please try again.";
+                err.style.display = "block";
+            }
+        };
+    </script>
+</body>
+</html>

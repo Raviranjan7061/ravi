@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Map View</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --bg-color: #F3F4F6;
+      --white: #FFFFFF;
+      --text-dark: #1F2937;
+      --border: #D1D5DB;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body {
+      background-color: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .topbar {
+      background: var(--white);
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+    }
+    .topbar h2 { font-size: 20px; color: var(--text-dark); }
+    .back-btn {
+      color: var(--text-dark);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .legend {
+      display: flex;
+      gap: 15px;
+      font-size: 14px;
+    }
+    .legend div { display: flex; align-items: center; gap: 5px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.lost { background-color: #EF4444; }
+    .dot.found { background-color: #10B981; }
+    
+    #map {
+      flex: 1;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    <h2><i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> Location Tracking Radar</h2>
+    <div class="legend">
+        <div><div class="dot lost"></div> Lost Items</div>
+        <div><div class="dot found"></div> Found Items</div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+      authDomain: "lost-found-app-af4e7.firebaseapp.com",
+      projectId: "lost-found-app-af4e7",
+      storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+      messagingSenderId: "933752134956",
+      appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Initialize Map centered around a general location (e.g. New Delhi / Default University Center)
+    const map = L.map('map').setView([28.6139, 77.2090], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Custom Icons
+    const lostIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: "<div style='background-color:#EF4444; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);'></div>",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    const foundIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: "<div style='background-color:#10B981; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);'></div>",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    async function fetchAndPlotItems() {
+       try {
+           const snapshot = await getDocs(collection(db, "items"));
+           
+           snapshot.forEach(doc => {
+               const data = doc.data();
+               
+               // To demonstrate the map tracking without actual GPS coordinates in the DB currently,
+               // we scatter points procedurally around the center point for the demo based on the doc ID to ensure consistency.
+               const hash = doc.id.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+               const randomLatOffset = (hash % 100) / 1000;
+               const randomLngOffset = ((hash >> 2) % 100) / 1000;
+               
+               const lat = 28.6139 + randomLatOffset - 0.05;
+               const lng = 77.2090 + randomLngOffset - 0.05;
+
+               const isLost = data.type === 'Lost';
+               
+               const marker = L.marker([lat, lng], {icon: isLost ? lostIcon : foundIcon}).addTo(map);
+               
+               let popupContent = `
+                  <div style="text-align: center; font-family: Inter;">
+                     <h3 style="margin: 0 0 5px 0;">${data.itemName || 'Unknown Item'}</h3>
+                     <p style="margin: 0; color: #6B7280; font-size: 12px;">Type: <strong style="color: ${isLost ? '#EF4444' : '#10B981'}">${data.type}</strong></p>
+                     <p style="margin: 5px 0; font-size: 13px;"><i class="fa-solid fa-location-dot"></i> Reported: ${data.location || 'Unknown'}</p>
+                     ${data.imageUrl ? `<img src="${data.imageUrl}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 5px;">` : ''}
+                  </div>
+               `;
+               
+               marker.bindPopup(popupContent);
+           });
+           
+       } catch (err) {
+           console.error("Error plotting map:", err);
+       }
+    }
+
+    fetchAndPlotItems();
+  </script>
+</body>
+</html>

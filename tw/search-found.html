@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Search Found Items</title>
+</head>
+<body>
+
+<h2 style="text-align:center;">Search Found Items</h2>
+
+<div style="text-align:center; margin-bottom:20px;">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search by item / location / category"
+    style="padding:8px; width:260px;"
+  >
+  <button onclick="searchItems()">Search</button>
+</div>
+
+<table border="1" width="90%" align="center">
+  <thead>
+    <tr style="background:#2b65ec; color:white;">
+      <th>Item</th>
+      <th>Category</th>
+      <th>Location</th>
+      <th>Date</th>
+      <th>Contact</th>
+    </tr>
+  </thead>
+  <tbody id="resultBody">
+    <tr>
+      <td colspan="5" style="text-align:center;">
+        Search for found items
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+<div style="text-align:center;">
+  <a href="index.html">← Back to Home</a>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+    authDomain: "lost-found-app-af4e7.firebaseapp.com",
+    projectId: "lost-found-app-af4e7",
+    storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+    messagingSenderId: "933752134956",
+    appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.searchItems = async function () {
+    const input = document.getElementById("searchInput");
+    const query = input.value.toLowerCase().trim();
+    const tbody = document.getElementById("resultBody");
+
+    tbody.innerHTML = "";
+
+    if (!query) {
+      tbody.innerHTML = `
+        <tr><td colspan="5" style="text-align:center;">Please enter search text</td></tr>
+      `;
+      return;
+    }
+
+    const words = query.split(/\s+/);
+
+    // ✅ IMPORTANT FIX → found_items collection
+    const snapshot = await getDocs(collection(db, "found_items"));
+
+    let found = false;
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      const text = `
+        ${d.itemName || ""}
+        ${d.category || ""}
+        ${d.location || ""}
+      `.toLowerCase();
+
+      const match = words.every(w => text.includes(w));
+
+      if (match) {
+        found = true;
+        tbody.innerHTML += `
+          <tr>
+            <td>${d.itemName || "-"}</td>
+            <td>${d.category || "-"}</td>
+            <td>${d.location || "-"}</td>
+            <td>${d.date || "-"}</td>
+            <td>${d.contact || "-"}</td>
+          </tr>
+        `;
+      }
+    });
+
+    if (!found) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center;">
+            No found items match your search
+          </td>
+        </tr>
+      `;
+    }
+
+    input.value = "";
+  };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Full Premium Dark Theme */
+            --primary: #6366F1;
+            --primary-light: #A5B4FC;
+            --primary-dark: #4338CA;
+            --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-blur: blur(12px);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dark: #F8FAFC;
+            --white: #FFFFFF;
+            --sidebar-bg: rgba(15, 23, 42, 0.95);
+            --card-header-text: #FFFFFF;
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --notif-item-bg: rgba(255, 255, 255, 0.05);
+            --danger: #EF4444;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --accent-purple: #8B5CF6;
+        }
+
+        body.light-theme {
+            /* Crystal Light Theme */
+            --bg-gradient: linear-gradient(135deg, #F0F4FF 0%, #FFFFFF 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(99, 102, 241, 0.1);
+            --text-main: #0F172A;
+            --text-muted: #475569;
+            --text-dark: #0F172A;
+            --white: #0F172A;
+            --sidebar-bg: rgba(255, 255, 255, 0.98);
+            --card-header-text: #0F172A;
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --notif-item-bg: rgba(99, 102, 241, 0.05);
+            --glass-blur: blur(20px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            display: flex;
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header i {
+            color: var(--primary-light);
+            font-size: 24px;
+        }
+
+        .close-sidebar-mobile {
+            display: none;
+            margin-left: auto;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            flex: 1;
+            padding: 24px 0;
+            list-style: none;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            margin: 8px 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            transform: translateX(8px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            color: #FFFFFF !important;
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+            font-weight: 700;
+        }
+
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .nav-subheader {
+            padding: 32px 30px 12px;
+            font-size: 12px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-weight: 800;
+            opacity: 0.8;
+            display: block;
+        }
+
+        .user-profile {
+            padding: 24px 16px;
+            margin: 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            font-size: 18px;
+            position: relative;
+        }
+
+        .user-profile:hover .avatar::after {
+            content: '\f304';
+            font-family: 'Font Awesome 6 Free';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-main);
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .logout-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .logout-btn:hover {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            margin-left: 260px;
+            max-width: 1400px;
+            margin-right: auto;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .greeting h1 {
+            color: var(--text-dark);
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .greeting p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--white);
+            color: var(--text-dark);
+            border: 1px solid #E5E7EB;
+        }
+
+        .btn-secondary:hover {
+            background-color: #F9FAFB;
+        }
+
+        /* Modern Card Styling (Glassmorphism) */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .trend-indicator {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-info h3 {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .stat-info .value {
+            color: var(--text-main);
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .icon-lost { background: linear-gradient(135deg, #EF4444, #B91C1C); color: white; }
+        .icon-found { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+        .icon-total { background: linear-gradient(135deg, #6366F1, #4338CA); color: white; }
+
+        /* Dashboard Sections */
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            color: var(--text-dark);
+        }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Lists */
+        .recent-list {
+            list-style: none;
+        }
+
+        .recent-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-bottom: 1px solid var(--glass-border);
+            transition: 0.2s;
+        }
+
+        .recent-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        body.light-theme .recent-item:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #F3F4F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-title {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .item-date {
+            color: var(--text-muted);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-lost { background-color: #FEE2E2; color: #B91C1C; }
+        .status-found { background-color: #D1FAE5; color: #047857; }
+
+        /* Quick Actions - Premium Gradient Cards */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .action-card {
+            padding: 24px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .action-card:hover::before { opacity: 1; }
+
+        .action-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-card i {
+            font-size: 32px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+
+        .action-card span {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .action-lost { background: linear-gradient(135deg, #FF4D4D, #CC0000); }
+        .action-found { background: linear-gradient(135deg, #00C851, #007E33); }
+        .action-search { background: linear-gradient(135deg, #33B5E5, #0099CC); }
+        .action-reports { background: linear-gradient(135deg, #FFBB33, #FF8800); }
+
+        /* Notification System */
+        .notif-wrapper {
+            position: relative;
+        }
+
+        .notif-bell {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        .notif-bell:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(15deg);
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid #1E1B4B;
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            top: 70px;
+            right: 0;
+            width: 320px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            display: none;
+            z-index: 1000;
+            animation: slideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .notif-item {
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--notif-item-bg);
+            margin-bottom: 10px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .notif-item:hover {
+            transform: translateX(4px);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .notif-item-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 3px;
+        }
+
+        .notif-item-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .notif-dropdown.active { display: block; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* AI Insight Card */
+        .ai-insight-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            margin-top: 24px;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .ai-header i { color: #A78BFA; font-size: 20px; }
+        .ai-header h3 { font-size: 15px; font-weight: 700; color: #EDE9FE; }
+
+        @media (max-width: 1024px) {
+            .dashboard-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Today Activity */
+        .activity-card {
+            margin-top: 24px;
+        }
+        .activity-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            color: var(--text-main);
+        }
+        .activity-item:hover {
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .activity-item i {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .activity-item h4 {
+            color: var(--text-main);
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .activity-item p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                box-shadow: 20px 0 50px rgba(0,0,0,0.2);
+            }
+            .sidebar.active {
+                transform: translateX(0) !important;
+                z-index: 2000 !important;
+                display: flex !important;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            .top-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            .actions {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 8px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            .menu-toggle {
+                display: block !important;
+            }
+            .close-sidebar-mobile {
+                display: flex !important;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 1500;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .menu-toggle:active { transform: scale(0.9); }
+
+        /* Overlay when sidebar is open */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            z-index: 1001; /* Above mobile elements */
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        /* Language Selector & Offline Banner */
+        .language-select {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .language-select option {
+            background-color: #1E1B4B;
+            color: white;
+            padding: 10px;
+        }
+
+        .offline-banner {
+            display: none;
+            background-color: var(--warning);
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .offline-banner.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Nearby Alert Card */
+        .nearby-alert {
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            border: 1px solid #C7D2FE;
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .alert-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--white);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .alert-text h4 {
+            font-size: 15px;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .alert-text p {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        /* Last Seen Tracker */
+        .tracker-section {
+            margin-top: 24px;
+        }
+
+        .tracker-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scrollbar-width: none;
+        }
+
+        .timeline::-webkit-scrollbar { display: none; }
+
+        .location-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .location-item {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            padding: 10px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+
+        .location-item:hover {
+            border-color: var(--primary-light);
+            background: #EEF2FF;
+        }
+
+        .location-item i {
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .timeline-arrow {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-cube"></i>
+            <span data-i18n="logo_text">Lost & Found</span>
+            <div id="closeSidebar" class="close-sidebar-mobile">
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-item active"><i class="fa-solid fa-border-all"></i> <span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="list.html" class="nav-item"><i class="fa-solid fa-list"></i> <span data-i18n="nav_all_items">All Items</span></a></li>
+            <li><a href="lost.html" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="nav_report_lost">Report Lost</span></a></li>
+            <li><a href="found.html" class="nav-item"><i class="fa-solid fa-hand-holding-heart"></i> <span data-i18n="nav_report_found">Report Found</span></a></li>
+            <li><a href="search-lost.html" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="nav_search_lost">Search Lost</span></a></li>
+            <li><a href="search-found.html" class="nav-item"><i class="fa-solid fa-magnifying-glass-location"></i> <span data-i18n="nav_search_found">Search Found</span></a></li>
+
+            <li class="nav-subheader" data-i18n="nav_advanced">Advanced Features</li>
+            <li><a href="smart-match.html" class="nav-item"><i class="fa-solid fa-robot"></i> <span data-i18n="nav_smart_match">AI Smart Match</span></a></li>
+            <li><a href="smart-claim.html" class="nav-item"><i class="fa-solid fa-box-open"></i> <span data-i18n="nav_smart_claim">Smart Claim & Pickup</span></a></li>
+            <li><a href="map-view.html" class="nav-item"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav_map_view">Live Map View</span></a></li>
+            <li><a href="notifications.html" class="nav-item"><i class="fa-solid fa-bell"></i> <span data-i18n="nav_notifications">Notifications</span></a></li>
+            <li><a href="claim-verification.html" class="nav-item"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="nav_claim_verification">Claim Verification</span></a></li>
+            <li><a href="history.html" class="nav-item" title="View your reports and claims"><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="nav_history">Activity History</span></a></li>
+            <li><a href="user-system.html" class="nav-item"><i class="fa-solid fa-users-gear"></i> <span data-i18n="nav_user_system">User-Based System</span></a></li>
+
+            <li class="nav-subheader" data-i18n="nav_system">System Actions</li>
+            <li><a href="how-to-use.html" class="nav-item"><i class="fa-solid fa-circle-info"></i> <span data-i18n="nav_how_to_use">How to Use</span></a></li>
+            <li><a href="about.html" class="nav-item"><i class="fa-solid fa-address-card"></i> <span data-i18n="nav_about">About Project</span></a></li>
+            <li><a href="contact.html" class="nav-item"><i class="fa-solid fa-envelope"></i> <span data-i18n="nav_contact">Contact Us</span></a></li>
+            <li id="indexAdminNavItem" style="display: none;"><a href="admin-dashboard.html" class="nav-item" style="color: var(--warning);"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="nav_admin">Admin Panel</span></a></li>
+        </ul>
+
+        <div class="user-profile" id="userProfileCard" title="View/Edit Profile" style="cursor: pointer;" onclick="window.location.href='user-system.html'">
+            <div class="avatar" id="userAvatar">U</div>
+            <div class="user-info">
+                <span class="user-name" id="userNameLabel">User</span>
+                <span class="user-email" id="userEmailLabel">user@example.com</span>
+            </div>
+            <a href="#" class="logout-btn" onclick="event.stopPropagation(); logout()" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Offline Banner -->
+        <div id="offlineBanner" class="offline-banner">
+            <i class="fa-solid fa-wifi-slash"></i> You are currently offline. Running in limited offline mode. Local copies available.
+        </div>
+
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="greeting">
+                <h1 id="welcomeUser" data-i18n="welcome_title" style="color: var(--text-main);">Welcome back 👋</h1>
+                <p data-i18n="welcome_subtitle" style="color: var(--text-muted); font-size: 14px; font-weight: 500;">Intelligent Lost & Found Management Hub</p>
+            </div>
+            <div class="actions">
+                <!-- Theme Toggle -->
+                <button class="notif-bell" id="themeToggle" title="Toggle Dark/Light Mode">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+                
+                <div class="notif-wrapper">
+                    <div class="notif-bell" id="bellIcon">
+                        <i class="fa-solid fa-bell"></i>
+                        <div class="notif-badge"></div>
+                    </div>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div style="font-weight: 800; font-size: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; color: var(--text-main);">
+                            Notifications 
+                            <span style="font-size: 12px; color: var(--primary); font-weight: 700; cursor: pointer;">Clear All</span>
+                        </div>
+                        <div class="notif-list">
+                            <div class="notif-item">
+                                <div class="notif-item-title">✨ New match found</div>
+                                <div class="notif-item-desc">AI matched your "Blue Wallet" with a recent report.</div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-item-title">✅ Report Approved</div>
+                                <div class="notif-item-desc">Your "Laptop" report is now live and searchable.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <select class="language-select" id="languageSelect">
+                    <option value="en">English (UK)</option>
+                    <option value="hi">Hindi (हिंदी)</option>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="te">Telugu (తెలుగు)</option>
+                    <option value="ur">Urdu (اردو)</option>
+                </select>
+                <a href="signup.html" class="btn" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--white);">
+                    <i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_new_account">Register</span>
+                </a>
+                <a href="login.html" class="btn" style="background: linear-gradient(135deg, var(--primary), var(--accent-purple)); color: white;">
+                    <i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="btn_login">Login</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="glass-card stat-card" onclick="window.location.href='list.html'" style="cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'" title="View All Items">
+                <div class="trend-indicator"><i class="fa-solid fa-arrow-up"></i> +4 today</div>
+                <div class="stat-icon icon-total">
+                    <i class="fa-solid fa-grid-2"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-i18n="stat_total">Total Items</h3>
+                    <div class="value" id="statTotalItems">...</div>
+                </div>
+            </div>
+            <div class="glass-card stat-card" onclick="window.location.href='search-lost.html'" style="cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'" title="Search Lost Items">
+                <div class="trend-indicator" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="fa-solid fa-clock"></i> +2 today</div>
+                <div class="stat-icon icon-lost">
+                    <i class="fa-solid fa-search"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-i18n="stat_lost">Lost Items</h3>
+                    <div class="value" id="statLostItems">...</div>
+                </div>
+            </div>
+            <div class="glass-card stat-card" onclick="window.location.href='search-found.html'" style="cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'" title="Search Found Items">
+                <div class="trend-indicator"><i class="fa-solid fa-check"></i> +1 today</div>
+                <div class="stat-icon icon-found">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-i18n="stat_found">Found Items</h3>
+                    <div class="value" id="statFoundItems">...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insight & Complex Grid -->
+        <div class="dashboard-sections">
+            
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- AI Insight Card -->
+                <div class="glass-card ai-insight-card">
+                    <div class="ai-header">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <h3 style="color: var(--text-main);">AI Predictive Analytics</h3>
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted);">
+                        Based on recent data, there's a <strong style="color: var(--success);">85% recovery chance</strong> for items lost near the <span style="color: var(--primary);">Main Cafeteria</span> today. 
+                        <strong>Pro-Tip:</strong> Use higher quality images for AI Smart Matching.
+                    </div>
+                </div>
+
+                <!-- Recent Items Added -->
+                <div class="glass-card">
+                    <div class="card-header" style="border-bottom: 1px solid var(--glass-border);">
+                        <h2 data-i18n="recent_reports">Recent Reports Feed</h2>
+                        <a href="list.html" class="view-all" data-i18n="view_all">View All Activity</a>
+                    </div>
+                    <ul class="recent-list" id="realRecentReports">
+                        <li style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Synchronizing live items...
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- My Claims & Handover Tracker (Hero Position) -->
+                <div class="glass-card" id="userClaimsSection" style="border: 1px solid var(--primary); background: rgba(99, 102, 241, 0.05);">
+                    <div class="card-header" style="border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
+                        <h2 style="color: var(--text-main);"><i class="fa-solid fa-clipboard-check" style="color: var(--success); margin-right: 8px;"></i> My Active Claims</h2>
+                        <span id="claimCountBadge" style="display: none; background: var(--success); color: white; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;">0</span>
+                    </div>
+                    <div id="claimsListContainer" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                        <div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 10px;">
+                            <i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> Accessing claim records...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Actions Grid -->
+                <div class="glass-card">
+                    <div class="card-header" style="border-bottom: 1px solid var(--glass-border);">
+                        <h2 data-i18n="quick_actions">Global Services</h2>
+                    </div>
+                    <div class="quick-actions">
+                        <a href="lost.html" class="action-card action-lost">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span data-i18n="nav_report_lost">Report Lost</span>
+                        </a>
+                        <a href="found.html" class="action-card action-found">
+                            <i class="fa-solid fa-check-to-slot"></i>
+                            <span data-i18n="nav_report_found">Report Found</span>
+                        </a>
+                        <a href="search-lost.html" class="action-card action-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span>Search Items</span>
+                        </a>
+                        <a href="list.html" class="action-card action-reports">
+                            <i class="fa-solid fa-chart-simple"></i>
+                            <span>All Records</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+
+        
+
+        <!-- Today's Activity Section -->
+        <div class="glass-card activity-card" id="todayActivityCard" style="margin-top: 32px;">
+            <div class="card-header" style="border-bottom: 1px solid var(--glass-border);">
+                <h2 style="color: var(--card-header-text);"><i class="fa-solid fa-bolt" style="color: var(--warning); margin-right: 8px;"></i> <span data-i18n="today_activity">Today's Activity</span></h2>
+            </div>
+            <div class="activity-feed">
+                <div class="activity-item">
+                    <i class="fa-solid fa-file-circle-plus" style="background-color: rgba(99, 102, 241, 0.2); color: var(--primary-light);"></i>
+                    <div class="activity-info">
+                        <span id="itemsReportedToday" style="font-weight: 700; font-size: 16px; color: var(--text-main);" data-i18n="today_reported_placeholder">0 items reported today</span>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" data-i18n="today_reported_subtitle">New entries in the last 24h</p>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="fa-solid fa-handshake-angle" style="background-color: rgba(16, 185, 129, 0.2); color: var(--success);"></i>
+                    <div class="activity-info">
+                        <span id="itemsMatchedToday" style="font-weight: 700; font-size: 16px; color: var(--text-main);" data-i18n="today_matched_placeholder">0 items matched today</span>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" data-i18n="today_matched_subtitle">Wait-list category matches</p>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="fa-solid fa-trophy" style="background-color: rgba(245, 158, 11, 0.2); color: var(--warning);"></i>
+                    <div class="activity-info">
+                        <span id="itemsRecoveredToday" style="font-weight: 700; font-size: 16px; color: var(--text-main);" data-i18n="today_recovered_placeholder">0 items successfully returned today</span>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" data-i18n="today_recovered_subtitle">Successful owner handovers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Offline Mode Handler
+        const offlineBanner = document.getElementById('offlineBanner');
+        
+        function updateOnlineStatus() {
+            if (!navigator.onLine) {
+                offlineBanner.classList.add('active');
+            } else {
+                offlineBanner.classList.remove('active');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Initial connection check right on load
+        if(navigator.onLine === false) {
+             updateOnlineStatus();
+        }
+
+        const translations = {
+            en: {
+                logo_text: "Lost & Found",
+                nav_dashboard: "Dashboard",
+                nav_all_items: "All Items",
+                nav_report_lost: "Report Lost",
+                nav_report_found: "Report Found",
+                nav_search_lost: "Search Lost",
+                nav_search_found: "Search Found",
+                nav_advanced: "Advanced Features",
+                nav_smart_match: "AI Smart Match",
+                nav_map_view: "Live Map View",
+                nav_notifications: "Notifications",
+                nav_claim: "Claim Verification",
+                nav_system: "System Actions",
+                nav_how_to_use: "How to Use",
+                nav_about: "About Project",
+                nav_contact: "Contact Us",
+                nav_admin: "Admin Panel",
+                welcome_title: "Welcome back, {user} 👋",
+                welcome_subtitle: "Here's what's happening with the lost and found items today.",
+                btn_new_account: "New Account",
+                btn_login: "Login",
+                stat_total: "Total Items Reported",
+                stat_lost: "Lost Items",
+                stat_found: "Found Items",
+                recent_reports: "Recent Reports",
+                view_all: "View All",
+                quick_actions: "Quick Actions",
+                nav_search_items: "Search Items",
+                today_activity: "Today's Activity",
+                today_reported_subtitle: "New entries in the last 24h",
+                today_matched_subtitle: "Wait-list category matches",
+                today_reported_template: "{n} items reported today",
+                today_matched_template: "{n} items matched today"
+            },
+            hi: {
+                logo_text: "खोया और पाया",
+                nav_dashboard: "डैशबोर्ड",
+                nav_all_items: "सभी आइटम",
+                nav_report_lost: "खोया रिपोर्ट करें",
+                nav_report_found: "पाया रिपोर्ट करें",
+                nav_search_lost: "खोया खोजें",
+                nav_search_found: "पाया खोजें",
+                nav_advanced: "उन्नत सुविधाएँ",
+                nav_smart_match: "AI स्मार्ट मैच",
+                nav_map_view: "लाइव मैप व्यू",
+                nav_notifications: "सूचनाएं",
+                nav_claim: "दावा सत्यापन",
+                nav_system: "सिस्टम क्रियाएं",
+                nav_how_to_use: "कैसे उपयोग करें",
+                nav_about: "प्रोजेक्ट के बारे में",
+                nav_contact: "संपर्क करें",
+                nav_admin: "एडमिन पैनल",
+                welcome_title: "नमस्ते, {user} 👋",
+                welcome_subtitle: "आज खोए और पाए गए आइटम के साथ क्या हो रहा है, यहाँ देखें।",
+                btn_new_account: "नया खाता",
+                btn_login: "लॉगिन",
+                stat_total: "कुल रिपोर्ट किए गए आइटम",
+                stat_lost: "खोए हुए आइटम",
+                stat_found: "पाए गए आइटम",
+                recent_reports: "हाल की रिपोर्ट",
+                view_all: "सभी देखें",
+                quick_actions: "त्वरित क्रियाएं",
+                nav_search_items: "आइटम खोजें",
+                today_activity: "आज की गतिविधि",
+                today_reported_subtitle: "पिछले 24 घंटों में नई प्रविष्टियां",
+                today_matched_subtitle: "प्रतीक्षा-सूची श्रेणी मिलान",
+                today_reported_template: "आज {n} आइटम रिपोर्ट किए गए",
+                today_matched_template: "आज {n} आइटम मेल खाए"
+            },
+            ta: {
+                logo_text: "தொலைந்தது & கிடைத்தது",
+                nav_dashboard: "டாஷ்போர்டு",
+                nav_all_items: "அனைத்து பொருட்கள்",
+                nav_report_lost: "தொலைந்ததை அறிவியுங்கள்",
+                nav_report_found: "கிடைத்ததை அறிவியுங்கள்",
+                nav_search_lost: "தொலைந்ததைத் தேடு",
+                nav_search_found: "கிடைத்ததைத் தேடு",
+                nav_advanced: "மேம்பட்ட அம்சங்கள்",
+                nav_smart_match: "AI ஸ்மார்ட் மேட்ச்",
+                nav_map_view: "நேரடி வரைபடம்",
+                nav_notifications: "அறிவிப்புகள்",
+                nav_claim: "உரிமை சரிபார்ப்பு",
+                nav_system: "அமைப்பு செயல்பாடுகள்",
+                nav_how_to_use: "எப்படி பயன்படுத்துவது",
+                nav_about: "திட்டம் பற்றி",
+                nav_contact: "தொடர்பு கொள்ள",
+                nav_admin: "நிர்வாக குழு",
+                welcome_title: "மீண்டும் வருக, {user} 👋",
+                welcome_subtitle: "இன்று தொலைந்த மற்றும் கிடைத்த பொருட்களில் என்ன நடக்கிறது என்பது இங்கே.",
+                btn_new_account: "புதிய கணக்கு",
+                btn_login: "உள்நுழை",
+                stat_total: "மொத்தம் பதிவானவை",
+                stat_lost: "தொலைந்த பொருட்கள்",
+                stat_found: "கிடைத்த பொருட்கள்",
+                recent_reports: "சமீபத்திய அறிக்கைகள்",
+                view_all: "அனைத்தையும் பார்",
+                quick_actions: "விரைவான செயல்கள்",
+                nav_search_items: "பொருட்களைத் தேடு",
+                today_activity: "இன்றைய செயல்பாடு",
+                today_reported_subtitle: "கடந்த 24 மணிநேரத்தில் புதியவை",
+                today_matched_subtitle: "பொருத்தமான பொருட்கள்",
+                today_reported_template: "இன்று {n} பொருட்கள் பதிவாகியுள்ளன",
+                today_matched_template: "இன்று {n} பொருட்கள் பொருந்தியுள்ளன"
+            },
+            te: {
+                logo_text: "కోల్పోయినవి & దొరికినవి",
+                nav_dashboard: "డ్యాష్‌బోర్డ్",
+                nav_all_items: "అన్ని వస్తువులు",
+                nav_report_lost: "కోల్పోయినట్లు నివేదించండి",
+                nav_report_found: "దొరికినట్లు నివేదించండి",
+                nav_search_lost: "కోల్పోయినవి వెతకండి",
+                nav_search_found: "దొరికినవి వెతకండి",
+                nav_advanced: "అధునాతన ఫీచర్లు",
+                nav_smart_match: "AI స్మార్ట్ మ్యాచ్",
+                nav_map_view: "లైవ్ మ్యాప్ వ్యూ",
+                nav_notifications: "నోటిఫికేషన్లు",
+                nav_claim: "క్లెయిమ్ వెరిఫికేషన్",
+                nav_system: "సిస్టమ్ చర్యలు",
+                nav_how_to_use: "ఎలా ఉపయోగించాలి",
+                nav_about: "ప్రాజెక్ట్ గురించి",
+                nav_contact: "సంప్రదించండి",
+                nav_admin: "అడ్మిన్ ప్యానెల్",
+                welcome_title: "స్వాగతం, {user} 👋",
+                welcome_subtitle: "ఈరోజు కోల్పోయిన మరియు దొరికిన వస్తువుల గురించి ఇక్కడ చూడండి.",
+                btn_new_account: "కొత్త ఖాతా",
+                btn_login: "లాగిన్",
+                stat_total: "మొత్తం నివేదించబడినవి",
+                stat_lost: "కోల్పోయిన వస్తువులు",
+                stat_found: "దొరికిన వస్తువులు",
+                recent_reports: "ఇటీవలి నివేదికలు",
+                view_all: "అన్నీ చూడండి",
+                quick_actions: "శీఘ్ర చర్యలు",
+                nav_search_items: "వస్తువులను వెతకండి",
+                today_activity: "నేటి కార్యకలాపాలు",
+                today_reported_subtitle: "గత 24 గంటల్లో కొత్తవి",
+                today_matched_subtitle: "సరిపోలిన వస్తువులు",
+                today_reported_template: "ఈరోజు {n} వస్తువులు నివేదించబడ్డాయి",
+                today_matched_template: "ఈరోజు {n} వస్తువులు సరిపోలాయి"
+            },
+            ur: {
+                logo_text: "گمشدہ اور پایا",
+                nav_dashboard: "ڈیش بورڈ",
+                nav_all_items: "تمام اشیاء",
+                nav_report_lost: "گمشدہ کی اطلاع دیں",
+                nav_report_found: "پائی گئی کی اطلاع دیں",
+                nav_search_lost: "گمشدہ تلاش کریں",
+                nav_search_found: "پائی گئی تلاش کریں",
+                nav_advanced: "جدید خصوصیات",
+                nav_smart_match: "AI اسمارٹ میچ",
+                nav_map_view: "لائیو نقشہ",
+                nav_notifications: "اطلاعات",
+                nav_claim: "کلیم کی تصدیق",
+                nav_system: "سسٹم کے اقدامات",
+                nav_how_to_use: "استعمال کا طریقہ",
+                nav_about: "پروجیکٹ کے بارے میں",
+                nav_contact: "رابطہ کریں",
+                nav_admin: "ایڈمن پینل",
+                welcome_title: "خوش آمدید، {user} 👋",
+                welcome_subtitle: "آج گمشدہ اور پائی گئی اشیاء کے ساتھ کیا ہو رہا ہے، یہاں دیکھیں۔",
+                btn_new_account: "نیا اکاؤنٹ",
+                btn_login: "لاگ ان",
+                stat_total: "کل رپورٹ شدہ اشیاء",
+                stat_lost: "گمشدہ اشیاء",
+                stat_found: "پائی گئی اشیاء",
+                recent_reports: "حالیہ رپورٹیں",
+                view_all: "سب دیکھیں",
+                quick_actions: "فوری اقدامات",
+                nav_search_items: "اشیاء تلاش کریں",
+                today_activity: "آج کی سرگرمی",
+                today_reported_subtitle: "گزشتہ 24 گھنٹوں میں نئی اشیاء",
+                today_matched_subtitle: "میچ ہونے والی اشیاء",
+                today_reported_template: "آج {n} اشیاء رپورٹ ہوئیں",
+                today_matched_template: "آج {n} اشیاء میچ ہوئیں"
+            }
+        };
+
+        const languageSelect = document.getElementById('languageSelect');
+        
+        const MASTER_ADMIN_EMAIL = "raviranjan706187@gmail.com";
+
+        function syncAdminNavVisibility() {
+            const em = (localStorage.getItem("userEmail") || "").toLowerCase().trim();
+            const adminLi = document.getElementById("indexAdminNavItem");
+            const adminLink = adminLi && adminLi.querySelector("a.nav-item");
+            if (!adminLi) return;
+            if (em === MASTER_ADMIN_EMAIL) {
+                adminLi.style.display = "list-item";
+                if (adminLink) {
+                    adminLink.style.display = "flex";
+                    adminLink.style.fontWeight = "800";
+                    adminLink.style.borderLeft = "4px solid var(--warning)";
+                }
+            } else {
+                adminLi.style.display = "none";
+                if (adminLink) adminLink.style.display = "none";
+            }
+        }
+
+        function applyTranslations(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Special handling for templates (will be updated by the firebase script too)
+            updateDynamicActivityStrings(lang);
+            syncAdminNavVisibility();
+        }
+
+        function updateDynamicActivityStrings(lang) {
+            const reportedCount = parseInt(document.getElementById('itemsReportedToday').getAttribute('data-count') || 0);
+            const matchedCount = parseInt(document.getElementById('itemsMatchedToday').getAttribute('data-count') || 0);
+            
+            const reportedEl = document.getElementById('itemsReportedToday');
+            const matchedEl = document.getElementById('itemsMatchedToday');
+            
+            if(translations[lang]) {
+                reportedEl.textContent = translations[lang].today_reported_template.replace('{n}', reportedCount);
+                matchedEl.textContent = translations[lang].today_matched_template.replace('{n}', matchedCount);
+            }
+        }
+
+        // Language Select Handler 
+        languageSelect.addEventListener('change', function(e) {
+            const lang = e.target.value;
+            localStorage.setItem('preferredLang', lang);
+            applyTranslations(lang);
+        });
+
+        // Load saved language
+        const savedLang = localStorage.getItem('preferredLang') || 'en';
+        languageSelect.value = savedLang;
+        applyTranslations(savedLang);
+
+        // Personalize User Dashboard from localStorage
+        function personalizeDashboard() {
+            const userName = localStorage.getItem("userName") || "User";
+
+            const sideName = document.getElementById("userNameLabel");
+            const sideEmail = document.getElementById("userEmailLabel");
+            
+            if(sideName) sideName.innerText = userName;
+            const userEmail = localStorage.getItem("userEmail") || "user@example.com";
+            if(sideEmail) sideEmail.innerText = userEmail;
+
+            const currentUserEmail = (localStorage.getItem("userEmail") || "").toLowerCase().trim();
+
+            if (currentUserEmail === MASTER_ADMIN_EMAIL) {
+                localStorage.setItem("userRole", "admin");
+            } else if (localStorage.getItem("userRole") === "admin") {
+                localStorage.setItem("userRole", "user");
+            }
+
+            syncAdminNavVisibility();
+
+            // Personalized Greeting
+            const welcomeEl = document.getElementById("welcomeUser");
+            const sideAvatar = document.getElementById("userAvatar");
+            const userPhoto = localStorage.getItem("userPhoto");
+
+            if(welcomeEl) welcomeEl.innerHTML = `Welcome back, ${userName} 👋`;
+            
+            if(sideAvatar) {
+                if(userPhoto) {
+                    sideAvatar.style.backgroundImage = `url('${userPhoto}')`;
+                    sideAvatar.innerText = "";
+                } else {
+                    sideAvatar.innerText = userName.charAt(0).toUpperCase();
+                }
+            }
+            
+            const currentLang = document.getElementById('languageSelect').value;
+            const finalName = userName === "User" ? "Guest" : userName;
+            if(translations[currentLang] && translations[currentLang].welcome_title) {
+                welcomeEl.innerText = translations[currentLang].welcome_title.replace('{user}', finalName);
+            } else {
+                welcomeEl.innerText = `Welcome back, ${finalName} 👋`;
+            }
+
+            // We will handle real-time sync in the module script below
+            syncAdminNavVisibility();
+        }
+        
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('mainSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeSidebarBtn = document.getElementById('closeSidebar');
+
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        if(menuToggle) menuToggle.addEventListener('click', openSidebar);
+        if(overlay) overlay.addEventListener('click', closeSidebar);
+        if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+
+        // Close sidebar when clicking nav links on mobile
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', () => {
+                if(window.innerWidth <= 768) closeSidebar();
+            });
+        });
+
+        // Notification Toggle
+        const bell = document.getElementById('bellIcon');
+        const notifDropdown = document.getElementById('notifDropdown');
+        
+        if(bell) {
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notifDropdown.classList.toggle('active');
+            });
+        }
+
+        document.addEventListener('click', () => {
+            if(notifDropdown) notifDropdown.classList.remove('active');
+        });
+
+        // Auto-close sidebar when clicking links on mobile
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', () => {
+                if(window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Theme Toggle Logic
+        const themeBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        // Load initial theme
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            themeIcon.className = 'fa-solid fa-sun';
+        }
+
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            themeIcon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            
+            // Add a little spring animation
+            themeIcon.style.transform = 'scale(0.8)';
+            setTimeout(() => themeIcon.style.transform = 'scale(1)', 100);
+        });
+
+        function logout() {
+            // Clear all local storage authentication data
+            localStorage.clear();
+            // Redirect to login page
+            window.location.href = 'login.html';
+        }
+
+        // Navigation Action Listeners
+        const loginBtn = document.getElementById('loginHeaderBtn');
+        const signupBtn = document.getElementById('newAccountBtn');
+
+        if(loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                window.location.href = 'login.html';
+            });
+        }
+
+        if(signupBtn) {
+            signupBtn.addEventListener('click', () => {
+                window.location.href = 'signup.html';
+            });
+        }
+
+        personalizeDashboard();
+
+
+        // Register Service Worker for advanced Offline Mode Auto-Sync
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registration successful');
+                    });
+            });
+        }
+    </script>
+
+    <!-- LIVE DATA FETCHING SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+            authDomain: "lost-found-app-af4e7.firebaseapp.com",
+            projectId: "lost-found-app-af4e7",
+            storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+            messagingSenderId: "933752134956",
+            appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // REAL-TIME USER PERSONALIZATION
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                localStorage.setItem("userId", user.uid);
+                localStorage.setItem("userEmail", user.email);
+                
+                // Real-time listener for user profile from Firestore
+                const userRef = doc(db, "users", user.uid);
+                onSnapshot(userRef, (docSnap) => {
+                    const sideName = document.getElementById("userNameLabel");
+                    const sideEmail = document.getElementById("userEmailLabel");
+                    const welcomeEl = document.getElementById("welcomeUser");
+                    const sideAvatar = document.getElementById("userAvatar");
+                    const currentLang = document.getElementById('languageSelect').value;
+
+                    let displayName = user.email; // Default fallback to email
+                    let photoURL = user.photoURL;
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.name) {
+                            displayName = data.name;
+                            localStorage.setItem("userName", data.name);
+                        }
+                        if (data.photoURL) photoURL = data.photoURL;
+                    } else {
+                        // If no firestore doc, try auth display name
+                        if (user.displayName) displayName = user.displayName;
+                        localStorage.setItem("userName", displayName);
+                    }
+
+                    // Update UI elements
+                    if (sideName) sideName.innerText = displayName;
+                    if (sideEmail) sideEmail.innerText = user.email;
+                    
+                    if (welcomeEl) {
+                        if(translations[currentLang] && translations[currentLang].welcome_title) {
+                            welcomeEl.innerText = translations[currentLang].welcome_title.replace('{user}', displayName);
+                        } else {
+                            welcomeEl.innerText = `Welcome back, ${displayName} 👋`;
+                        }
+                    }
+
+                    if (sideAvatar) {
+                        if (photoURL) {
+                            sideAvatar.style.backgroundImage = `url('${photoURL}')`;
+                            sideAvatar.innerText = "";
+                        } else {
+                            sideAvatar.innerText = displayName.charAt(0).toUpperCase();
+                            sideAvatar.style.backgroundImage = "none";
+                        }
+                    }
+
+                    syncAdminNavVisibility();
+                });
+                
+                fetchDashboardData();
+                fetchUserClaims();
+            } else {
+                // Not logged in - maybe redirect or show guest
+                console.log("User is signed out");
+                // window.location.href = 'login.html'; // Uncomment to enforce login
+            }
+        });
+
+        async function fetchDashboardData() {
+            try {
+                // Fetch stats (In production, you'd use aggregation queries, pulling all for demo accuracy)
+                const snapshot = await getDocs(query(collection(db, "items"), orderBy("createdAt", "desc")));
+                
+                let total = 0;
+                let lostObj = 0;
+                let foundObj = 0;
+
+                let todayReported = 0;
+                let todayLostCategories = new Set();
+                let todayFoundCategories = new Set();
+                let todayDateStr = new Date().toDateString();
+                
+                let recentHTML = "";
+                let count = 0;
+
+                if (snapshot.empty) {
+                    document.getElementById("realRecentReports").innerHTML = `
+                        <li style="padding: 20px; text-align: center; color: var(--text-light); font-size: 14px;">
+                            No items reported yet. Be the first!
+                        </li>
+                    `;
+                } else {
+                    document.getElementById("realRecentReports").innerHTML = ""; // Clear loader
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    total++;
+                    
+                    const isLost = data.type === 'Lost';
+                    if (isLost) lostObj++; else foundObj++;
+
+                    // Check for today's activity
+                    const itemDateStr = data.createdAt ? data.createdAt.toDate().toDateString() : null;
+                    if (itemDateStr === todayDateStr) {
+                        todayReported++;
+                        if (isLost) todayLostCategories.add(data.category);
+                        else todayFoundCategories.add(data.category);
+                    }
+
+                    if (count < 4) {
+                        let iconClass = "fa-box-open";
+                        let cat = (data.category || "").toLowerCase();
+                        if(cat.includes("mobile")) iconClass = "fa-mobile-screen";
+                        else if(cat.includes("wallet")) iconClass = "fa-wallet";
+                        else if(cat.includes("keys")) iconClass = "fa-key";
+                        else if(cat.includes("bag")) iconClass = "fa-briefcase";
+                        else if(cat.includes("document")) iconClass = "fa-file-lines";
+                        
+                        recentHTML += `
+                            <li class="recent-item">
+                                <div class="item-icon" style="background-color: ${isLost ? '#FEE2E2' : '#D1FAE5'}; color: ${isLost ? '#B91C1C' : '#047857'};">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                                <div class="item-details">
+                                    <div class="item-title">${data.itemName || "Unnamed Item"}</div>
+                                    <div class="item-date"><i class="fa-solid fa-clock" style="font-size:10px;"></i> ${data.date || "Unknown Date"}</div>
+                                </div>
+                                <div class="status ${isLost ? 'status-lost' : 'status-found'}">${data.type}</div>
+                            </li>
+                        `;
+                        count++;
+                    }
+                });
+
+                // Update DOM Values safely
+                if(count > 0) document.getElementById("realRecentReports").innerHTML = recentHTML;
+                document.getElementById("statTotalItems").innerText = total;
+                document.getElementById("statLostItems").innerText = lostObj;
+                document.getElementById("statFoundItems").innerText = foundObj;
+
+                // Update Today's Activity
+                let matchedCategoriesCount = 0;
+                todayLostCategories.forEach(cat => {
+                    if (todayFoundCategories.has(cat)) matchedCategoriesCount++;
+                });
+
+                const reportedTodayEl = document.getElementById("itemsReportedToday");
+                const matchedTodayEl = document.getElementById("itemsMatchedToday");
+                
+                reportedTodayEl.setAttribute('data-count', todayReported);
+                matchedTodayEl.setAttribute('data-count', matchedCategoriesCount);
+                
+                const currentLang = document.getElementById('languageSelect').value;
+                if(translations[currentLang]) {
+                    reportedTodayEl.textContent = translations[currentLang].today_reported_template.replace('{n}', todayReported);
+                    matchedTodayEl.textContent = translations[currentLang].today_matched_template.replace('{n}', matchedCategoriesCount);
+                } else {
+                    reportedTodayEl.innerText = `${todayReported} items reported today`;
+                    matchedTodayEl.innerText = `${matchedCategoriesCount} items matched today`;
+                }
+
+            } catch (err) {
+                console.error("Failed to load dashboard data:", err);
+                document.getElementById("realRecentReports").innerHTML = `
+                    <li style="padding: 20px; text-align: center; color: var(--danger); font-size: 14px;">
+                        Error loading reports. Check network connection.
+                    </li>`;
+            }
+        }
+        
+
+        async function fetchUserClaims() {
+            const userId = localStorage.getItem('userId');
+            const container = document.getElementById('claimsListContainer');
+            const badge = document.getElementById('claimCountBadge');
+            
+            if(!userId) {
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:13px;">Login to view your claims.</div>`;
+                return;
+            }
+
+            try {
+                // We use global context imports from the main module above
+                const q = query(collection(db, "claims"), where("claimantUserId", "==", userId));
+                const snapshot = await getDocs(q);
+                
+                container.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:13px;">No active claims found.</div>`;
+                    if(badge) badge.style.display = 'none';
+                    return;
+                }
+
+                // Sort manually in Memory to avoid Composite Index errors
+                const sortedDocs = snapshot.docs.sort((a, b) => {
+                    const timeA = a.data().submittedAt?.seconds || 0;
+                    const timeB = b.data().submittedAt?.seconds || 0;
+                    return timeB - timeA;
+                });
+
+                if(badge) {
+                    badge.innerText = snapshot.size;
+                    badge.style.display = 'inline-block';
+                }
+
+                sortedDocs.forEach(docSnap => {
+                    const c = docSnap.data();
+                    const status = c.status || 'Pending';
+                    const isApproved = status === 'Approved';
+                    const isReturned = status === 'Returned';
+                    
+                    let statusColor = "var(--warning)";
+                    let statusIcon = "fa-clock-rotate-left";
+                    
+                    if(isApproved) { statusColor = "var(--success)"; statusIcon = "fa-circle-check"; }
+                    if(status === 'Rejected') { statusColor = "var(--danger)"; statusIcon = "fa-circle-xmark"; }
+                    if(isReturned) { statusColor = "var(--primary-light)"; statusIcon = "fa-handshake"; }
+
+                    container.innerHTML += `
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 16px; border-radius: 16px; transition: 0.3s; position: relative;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                <div>
+                                    <h4 style="color: var(--text-main); font-size: 15px; margin-bottom: 2px;">${c.itemName || "Unnamed Item"}</h4>
+                                    <span style="font-size: 11px; color: ${statusColor}; font-weight: 700; text-transform: uppercase;">
+                                        <i class="fa-solid ${statusIcon}"></i> ${status}
+                                    </span>
+                                </div>
+                                </div>
+                                ${c.pickupCode ? `<div style="text-align: right;"><small style="display:block; color:var(--text-muted); font-size:10px;">PICKUP CODE</small><strong style="color:var(--primary-light); font-size:16px; letter-spacing:1px;">${c.pickupCode}</strong></div>` : ''}
+                            </div>
+
+                            ${isApproved ? `
+                                <div style="background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--success); padding: 12px; border-radius: 12px; margin-top: 10px;">
+                                    <div style="font-size: 12px; color: var(--text-main); font-weight: 700; margin-bottom: 4px;"><i class="fa-solid fa-location-dot"></i> Collection Info</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">
+                                        <strong>Location:</strong> ${c.pickupLocation || "Security Center"}<br>
+                                        <strong>Timing:</strong> ${c.pickupSchedule || "10 AM - 5 PM"}<br>
+                                        <strong>Contact:</strong> ${c.contactPerson || "Admin"}
+                                    </div>
+                                    <div style="margin-top: 8px; font-size: 11px; color: var(--success); font-weight: 600;">Your claim is approved. Please show the code above at pickup.</div>
+                                </div>
+                            ` : ''}
+
+                            ${isReturned ? `
+                                <div style="text-align: center; color: var(--success); font-weight: 700; font-size: 12px; margin-top: 10px;">
+                                    <i class="fa-solid fa-check-double"></i> Item Collected Successfully
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                console.error("Error loading claims tracker:", err);
+                container.innerHTML = `<div style="text-align:center; color:var(--danger); font-size:12px;">Failed to load tracker.</div>`;
+            }
+        }
+
+        fetchDashboardData();
+        fetchUserClaims();
+    </script>
+</body>
+</html>

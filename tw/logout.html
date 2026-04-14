@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Logout</title>
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --white: #FFFFFF;
+      --text-main: #1F2937;
+      --text-muted: #6B7280;
+      --glass-bg: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated Background */
+    .bg-blobs {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      filter: blur(80px);
+    }
+
+    .blob {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: move 20s infinite alternate;
+    }
+
+    .blob-1 { top: -100px; left: -100px; background: #4F46E5; }
+    .blob-2 { bottom: -100px; right: -100px; background: #7C3AED; animation-delay: -5s; }
+
+    @keyframes move {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(100px, 100px) scale(1.2); }
+    }
+
+    .logout-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      padding: 48px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .icon-wrapper {
+      width: 72px;
+      height: 72px;
+      background: #FEE2E2;
+      color: #EF4444;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 24px;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(79, 70, 229, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      margin: 24px auto 0;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="logout-card">
+  <div class="icon-wrapper">
+    <i class="fa-solid fa-right-from-bracket"></i>
+  </div>
+  <h2>Logging Out...</h2>
+  <p>Securely signing you out of your session. Please wait a moment.</p>
+  <div class="loader"></div>
+</div>
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+    authDomain: "lost-found-app-af4e7.firebaseapp.com",
+    projectId: "lost-found-app-af4e7",
+    storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+    messagingSenderId: "933752134956",
+    appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  signOut(auth)
+    .then(() => {
+      alert("Logout successful");
+      window.location.href = "login.html";
+    })
+    .catch((error) => {
+      alert(error.message);
+      window.location.href = "index.html";
+    });
+</script>
+
+</body>
+</html>
+

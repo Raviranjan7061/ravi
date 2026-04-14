@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User-Based System - Lost & Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4338CA;
+            --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --accent-purple: #8B5CF6;
+            --white: #FFFFFF;
+        }
+
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #F0F4FF 0%, #FFFFFF 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(99, 102, 241, 0.1);
+            --text-main: #0F172A;
+            --text-muted: #475569;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+        body { background: var(--bg-gradient); background-attachment: fixed; color: var(--text-main); min-height: 100vh; padding: 40px 20px; transition: all 0.3s ease; }
+
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .back-btn { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: 0.3s; font-weight: 600;}
+        .back-btn:hover { color: var(--primary-light); transform: translateX(-5px); }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .tabs { display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; flex-wrap: wrap; }
+        .tab { cursor: pointer; color: var(--text-muted); font-weight: 600; padding: 10px 24px; border-radius: 12px; transition: 0.3s; display: flex; align-items: center; gap: 8px;}
+        .tab:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+        .tab.active { background: linear-gradient(135deg, var(--primary), var(--accent-purple)); color: white; border: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+
+        /* History & Claims Styles */
+        .history-list { display: grid; gap: 16px; }
+        .history-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .history-card:hover { border-color: var(--primary-light); transform: translateY(-2px); background: rgba(255,255,255,0.06); }
+        .item-info h3 { font-size: 16px; margin-bottom: 6px; }
+        .item-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 15px; opacity: 0.9;}
+        .item-meta i { margin-right: 4px; color: var(--primary-light); }
+
+        .status-badge { padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .status-approved { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .status-rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .status-returned { background: rgba(99, 102, 241, 0.1); color: var(--primary-light); border: 1px solid var(--primary-light); }
+
+        .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;}
+
+        /* Profile Styles */
+        .profile-container { display: none; }
+        .avatar-section { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--glass-border); }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, var(--primary), var(--accent-purple)); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; background-size: cover; background-position: center; border: 3px solid var(--white); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .avatar-text h2 { font-size: 20px; color: var(--text-main); margin-bottom: 4px; }
+        .avatar-text p { font-size: 13px; color: var(--text-muted); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input { width: 100%; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; transition: 0.3s; font-size: 14px;}
+        .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); background: rgba(255,255,255,0.08); }
+
+        .btn-save { width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--accent-purple)); color: white; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); transition: 0.3s; margin-top: 10px; }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4); }
+        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .btn-upload { display: inline-flex; align-items: center; gap: 8px; padding: 14px 20px; background: rgba(255,255,255,0.05); border: 2px dashed var(--glass-border); border-radius: 12px; color: var(--text-main); cursor: pointer; transition: 0.3s; font-size: 14px; width: 100%; justify-content: center;}
+        .btn-upload:hover { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+
+        /* Theme Switch */
+        .theme-switch { position: fixed; top: 20px; right: 20px; width: 44px; height: 44px; border-radius: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch" id="themeToggle">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 style="font-size: 28px; font-weight: 800;">User-Based System</h1>
+                <p style="color: var(--text-muted); margin-top: 6px; font-size: 14px;">Personalized hub for your reports, claims, and profile.</p>
+            </div>
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+        </div>
+
+        <div class="glass-card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('reports')"><i class="fa-solid fa-bullhorn"></i> My Reports</div>
+                <div class="tab" onclick="switchTab('claims')"><i class="fa-solid fa-clipboard-check"></i> My Claims</div>
+                <div class="tab" onclick="switchTab('profile')"><i class="fa-solid fa-user-pen"></i> My Profile</div>
+            </div>
+
+            <!-- List Container for Reports/Claims -->
+            <div id="listContainer" class="history-list">
+                <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Initializing workspace...</div>
+            </div>
+
+            <!-- Profile Container -->
+            <div id="profileContainer" class="profile-container">
+                <div class="avatar-section">
+                    <div class="profile-avatar" id="avatarDisplay">U</div>
+                    <div class="avatar-text">
+                        <h2 id="nameDisplay">User Name</h2>
+                        <p id="emailDisplay">user@example.com</p>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="nameInput" placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="emailInput" placeholder="name@example.com" readonly style="opacity: 0.7; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phoneInput" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="form-group">
+                        <label>Nickname</label>
+                        <input type="text" id="nicknameInput" placeholder="How should we refer to you?">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Home Address</label>
+                    <input type="text" id="addressInput" placeholder="City, State, Country">
+                </div>
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                    <label for="photoUpload" class="btn-upload">
+                        <i class="fa-solid fa-camera"></i> Upload Image
+                    </label>
+                </div>
+
+                <button class="btn-save" id="saveBtn">
+                    <i class="fa-solid fa-floppy-disk"></i> Update Profile Details
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+            authDomain: "lost-found-app-af4e7.firebaseapp.com",
+            projectId: "lost-found-app-af4e7",
+            storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+            messagingSenderId: "933752134956",
+            appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const userId = localStorage.getItem("userId");
+        let activeTab = 'reports';
+        let selectedPhotoData = "";
+
+        // Load Initial Profile UI Text
+        function loadProfileState() {
+            const name = localStorage.getItem("userName") || "Guest User";
+            const email = localStorage.getItem("userEmail") || "Not Logged In";
+            const photo = localStorage.getItem("userPhoto") || "";
+            const phone = localStorage.getItem("userPhone") || "";
+            const address = localStorage.getItem("userAddress") || "";
+            const nickname = localStorage.getItem("userNickname") || "";
+            
+            document.getElementById("nameDisplay").innerText = name;
+            document.getElementById("emailDisplay").innerText = email;
+            document.getElementById("nameInput").value = name;
+            document.getElementById("emailInput").value = email;
+            document.getElementById("phoneInput").value = phone;
+            document.getElementById("addressInput").value = address;
+            document.getElementById("nicknameInput").value = nickname;
+            selectedPhotoData = photo;
+
+            const avatar = document.getElementById("avatarDisplay");
+            if(photo) {
+                avatar.textContent = "";
+                avatar.style.backgroundImage = `url('${photo}')`;
+            } else {
+                avatar.textContent = name.charAt(0).toUpperCase();
+                avatar.style.backgroundImage = "none";
+            }
+        }
+
+        window.switchTab = (tab) => {
+            activeTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const listContainer = document.getElementById('listContainer');
+            const profileContainer = document.getElementById('profileContainer');
+
+            if(tab === 'profile') {
+                listContainer.style.display = 'none';
+                profileContainer.style.display = 'block';
+                loadProfileState();
+            } else {
+                listContainer.style.display = 'grid';
+                profileContainer.style.display = 'none';
+                fetchListData();
+            }
+        };
+
+        async function fetchListData() {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i> Retrieving your records...</div>';
+
+            try {
+                let q;
+                if(activeTab === 'reports') {
+                    q = query(collection(db, "items"), where("userId", "==", userId));
+                } else if(activeTab === 'claims') {
+                    q = query(collection(db, "claims"), where("claimantUserId", "==", userId));
+                }
+
+                if(!q) return;
+
+                const snapshot = await getDocs(q);
+                container.innerHTML = "";
+
+                if(snapshot.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fa-regular fa-folder-open" style="font-size:24px; margin-bottom:10px; display:block;"></i>No records found in this section.</div>`;
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    let status = data.status || 'Pending';
+                    const date = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString() : (data.submittedAt?.toDate ? data.submittedAt.toDate().toLocaleDateString() : 'N/A');
+                    
+                    let statusClass = "status-pending";
+                    if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
+                    if (status.toLowerCase().includes("reject")) statusClass = "status-rejected";
+                    if (status.toLowerCase().includes("return")) statusClass = "status-returned";
+                    
+                    container.innerHTML += `
+                        <div class="history-card">
+                            <div class="item-info">
+                                <h3>${data.itemName || "Unnamed Item"}</h3>
+                                <div class="item-meta">
+                                    <span title="Date"><i class="fa-solid fa-calendar"></i> ${date}</span>
+                                    <span title="Type/Category"><i class="fa-solid fa-tag"></i> ${data.category || (activeTab === 'reports' ? data.type : 'Claim')}</span>
+                                    <span title="Location"><i class="fa-solid fa-location-dot"></i> ${data.location || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div class="status-badge ${statusClass}">${status}</div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Failed to load data: ${err.message}</div>`;
+            }
+        }
+
+        // Photo Upload Handler
+        document.getElementById("photoUpload")?.addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    selectedPhotoData = event.target.result;
+                    const avatar = document.getElementById("avatarDisplay");
+                    avatar.textContent = "";
+                    avatar.style.backgroundImage = `url('${selectedPhotoData}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Save Profile Action
+        document.getElementById("saveBtn").onclick = async () => {
+            const newName = document.getElementById("nameInput").value.trim();
+            const newPhone = document.getElementById("phoneInput").value.trim();
+            const newAddress = document.getElementById("addressInput").value.trim();
+            const newNickname = document.getElementById("nicknameInput").value.trim();
+            const newPhoto = selectedPhotoData;
+
+            if (!newName) return alert("Display name is required.");
+
+            const saveBtn = document.getElementById("saveBtn");
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+            try {
+                if (userId) {
+                    const userRef = doc(db, "users", userId);
+                    await setDoc(userRef, { 
+                        name: newName, 
+                        phone: newPhone,
+                        address: newAddress,
+                        nickname: newNickname,
+                        photoURL: newPhoto,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    localStorage.setItem("userName", newName);
+                    localStorage.setItem("userPhone", newPhone);
+                    localStorage.setItem("userAddress", newAddress);
+                    localStorage.setItem("userNickname", newNickname);
+                    localStorage.setItem("userPhoto", newPhoto);
+                }
+
+                alert("Successfully explicitly updated profile metadata!");
+                loadProfileState();
+            } catch (err) { alert(err.message); }
+            finally { 
+                saveBtn.disabled = false; 
+                saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Update Profile Details`;
+            }
+        };
+
+        // Theme Setup
+        const themeBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            themeIcon.className = 'fa-solid fa-sun';
+        }
+        themeBtn.onclick = () => {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            themeIcon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        };
+
+        // Init App properly
+        if(userId) {
+            loadProfileState();
+            fetchListData();
+        } else {
+            window.location.href="login.html";
+        }
+    </script>
+</body>
+</html>

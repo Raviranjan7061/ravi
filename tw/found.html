@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Found Item - Lost & Found</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #10B981; /* Success Green for Found Items */
+      --primary-dark: #059669;
+      --bg-color: #F3F4F6;
+      --white: #FFFFFF;
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+      --border: #D1D5DB;
+      --danger: #EF4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body {
+      background-color: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .form-container {
+      background: var(--white);
+      max-width: 500px;
+      width: 100%;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header i {
+      font-size: 40px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .header h2 { color: var(--text-dark); font-size: 24px; font-weight: 700; }
+    .header p { color: var(--text-light); font-size: 14px; margin-top: 8px; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-dark);
+      transition: all 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .file-upload {
+      border: 2px dashed var(--border);
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-light);
+      margin-top: 5px;
+    }
+    
+    .btn-submit {
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-submit:hover { background-color: var(--primary-dark); }
+    .btn-submit:disabled { background-color: var(--text-light); cursor: not-allowed; }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--primary); }
+    #statusMsg { text-align: center; margin-top: 15px; font-weight: 500; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <div class="header">
+    <i class="fa-solid fa-hand-holding-heart"></i>
+    <h2>Report Found Item</h2>
+    <p>Help us return this to its rightful owner.</p>
+  </div>
+
+  <div class="form-group">
+    <label>Item Name</label>
+    <input type="text" id="itemName" placeholder="e.g. Car Keys">
+  </div>
+
+  <div class="form-group">
+    <label>Category</label>
+    <select id="category">
+      <option value="">Select Category</option>
+      <option>Mobile</option>
+      <option>Bag</option>
+      <option>Wallet</option>
+      <option>Documents</option>
+      <option>Electronics</option>
+      <option>Other</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Location Found</label>
+    <!-- Use specific ID to avoid global namespace conflicts -->
+    <input type="text" id="itemLocation" placeholder="e.g. Cafeteria Table 4">
+  </div>
+
+  <div class="form-group">
+    <label>Date Found</label>
+    <input type="date" id="date">
+  </div>
+
+  <div class="form-group">
+    <label>Your Contact Number</label>
+    <input type="text" id="contact" placeholder="For verification purposes">
+  </div>
+
+  <div class="form-group">
+    <label>Description</label>
+    <textarea id="description" placeholder="Any specific details safely describing the item..."></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Upload Image</label>
+    <input type="file" id="image" accept="image/*" class="file-upload">
+  </div>
+
+  <button type="button" class="btn-submit" id="submitBtn" onclick="submitItem()">
+    Submit Report <i class="fa-solid fa-paper-plane"></i>
+  </button>
+  
+  <div id="statusMsg"></div>
+
+  <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDkDU-dLyp66DTmMIpNqBneq9ughfgaCVM",
+    authDomain: "lost-found-app-af4e7.firebaseapp.com",
+    projectId: "lost-found-app-af4e7",
+    storageBucket: "lost-found-app-af4e7.firebasestorage.app",
+    messagingSenderId: "933752134956",
+    appId: "1:933752134956:web:6edf4c9b1b23c746446089"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  window.submitItem = async function () {
+    const btn = document.getElementById("submitBtn");
+    const statusMsg = document.getElementById("statusMsg");
+    
+    // Explicitly grab values to fix JS scoping bugs
+    const itemName = document.getElementById("itemName").value;
+    const category = document.getElementById("category").value;
+    const locationVal = document.getElementById("itemLocation").value; 
+    const date = document.getElementById("date").value;
+    const contact = document.getElementById("contact").value;
+    const description = document.getElementById("description").value;
+    const file = document.getElementById("image").files[0]; // Standardized ID to "image"
+
+    if(!itemName || !category || !locationVal || !date) {
+        statusMsg.style.color = "var(--danger)";
+        statusMsg.innerText = "Please fill out all required fields.";
+        return;
+    }
+
+    if (!file) {
+      statusMsg.style.color = "var(--danger)";
+      statusMsg.innerText = "Please select an image.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading...`;
+    statusMsg.innerText = "";
+
+    try {
+      // Create local compressed Base64 to bypass any Firebase Storage blocking/CORS issues
+      const compressImage = (fileToCompress) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const MAX_WIDTH = 500; // Force small size to easily fit within Firestore 1MB doc limit
+              let width = img.width;
+              let height = img.height;
+              if (width > MAX_WIDTH) {
+                height = Math.round(height * (MAX_WIDTH / width));
+                width = MAX_WIDTH;
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", 0.6)); // 60% quality JPEG Base64
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(fileToCompress);
+        });
+      };
+
+      const imageURL = await compressImage(file);
+
+      await addDoc(collection(db, "items"), {
+        itemName: itemName,
+        category: category,
+        location: locationVal,
+        date: date,
+        contact: contact,
+        description: description,
+        imageUrl: imageURL,
+        type: "Found", // Tagging it correctly
+        status: "Pending", // Setup for Admin panel feature
+        userId: localStorage.getItem("userId") || "anonymous",
+        createdAt: serverTimestamp()
+      });
+
+      statusMsg.style.color = "var(--primary-dark)";
+      statusMsg.innerText = "✅ Item submitted successfully!";
+      
+      setTimeout(() => {
+          window.location.href = "index.html";
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      statusMsg.style.color = "var(--danger)";
+      statusMsg.innerText = err.message;
+      btn.disabled = false;
+      btn.innerHTML = `Submit Report <i class="fa-solid fa-paper-plane"></i>`;
+    }
+  };
+</script>
+</body>
+</html>
